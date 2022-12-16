@@ -2,6 +2,7 @@ package tsar.alex.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tsar.alex.exception.RefreshTokenException;
@@ -23,37 +24,37 @@ public class RefreshTokenService {
     private Long refreshTokenExpirationSeconds;
 
     public RefreshToken generateRefreshToken(User user) {
-
-        if (refreshTokenRepository.existsByUser(user)) {
-            refreshTokenRepository.deleteByUser(user);
-        }
-
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(UUID.randomUUID().toString())
+                .maxAge(refreshTokenExpirationSeconds)
                 .expiresAt(Instant.now().plusSeconds(refreshTokenExpirationSeconds))
                 .build();
-
         return refreshTokenRepository.save(refreshToken);
     }
 
-    public User validateRefreshTokenAndRetrieveUser(String token) throws RefreshTokenException {
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+    public User validateRefreshTokenAndRetrieveUser(RefreshToken refreshToken) throws RefreshTokenException {
+        RefreshToken persistentRefreshToken = refreshTokenRepository.findByToken(refreshToken.getToken())
                 .orElseThrow(() -> new RefreshTokenException("Refresh token not exist or expired"));
 
-        if (refreshToken.getExpiresAt().isBefore(Instant.now())) {
+        if (persistentRefreshToken.getExpiresAt().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
             throw new RefreshTokenException("Refresh token is expired");
         }
 
-        User user = refreshToken.getUser();
-        refreshTokenRepository.delete(refreshToken);
-        return user;
+        refreshTokenRepository.delete(persistentRefreshToken);
+
+        return persistentRefreshToken.getUser();
     }
 
     public void deleteRefreshToken(RefreshToken refreshToken) {
         refreshTokenRepository.deleteByToken(refreshToken.getToken());
     }
 
+    @Scheduled(fixedDelay = 90 * 1000, initialDelay = 90 * 1000)
+    public void deleteExpiredTokensFromDB() {
+        Instant dateTime = Instant.now();
+        refreshTokenRepository.deleteByExpiresAtBefore(dateTime);
+    }
 
 }

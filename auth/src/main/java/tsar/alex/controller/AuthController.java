@@ -1,15 +1,13 @@
 package tsar.alex.controller;
 
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tsar.alex.dto.AuthResponse;
-import tsar.alex.dto.LoginRequest;
-import tsar.alex.dto.RefreshTokenRequest;
-import tsar.alex.dto.RegisterRequest;
-import tsar.alex.model.RefreshToken;
+import tsar.alex.dto.*;
+import tsar.alex.mapper.AuthMapper;
 import tsar.alex.model.User;
 import tsar.alex.service.AuthService;
 import tsar.alex.service.RefreshTokenService;
@@ -21,38 +19,55 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
-    private final ModelMapper modelMapper;
+    private final AuthMapper authMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
-        User user = modelMapper.map(registerRequest, User.class);
-        System.out.println(registerRequest);
-        System.out.println(user);
+    public ResponseEntity<Void> register(@RequestBody RegisterRequest registerRequest) {
+        User user = authMapper.mapToUser(registerRequest);
         authService.register(user);
-
-        return new ResponseEntity<>("User registration successful", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
-        User user = modelMapper.map(loginRequest, User.class);
+    public ResponseEntity<AccessTokenDto> login(@RequestBody LoginRequest loginRequest) {
+        User user = authMapper.mapToUser(loginRequest);
         AuthResponse authResponse = authService.login(user);
 
-        return new ResponseEntity<>(authResponse, HttpStatus.ACCEPTED);
+        return generateRefreshTokenResponse(authResponse);
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> login(@RequestBody RefreshTokenRequest refreshTokenRequest) {
-        RefreshToken refreshToken = modelMapper.map(refreshTokenRequest, RefreshToken.class);
-        AuthResponse authResponse = authService.refreshToken(refreshToken);
+    @GetMapping("/refresh")
+    public ResponseEntity<AccessTokenDto> login(@CookieValue(name = "refresh-token") String token) {
+        AuthResponse authResponse = authService.refreshToken(authMapper.mapToRefreshToken(token));
 
-        return new ResponseEntity<>(authResponse, HttpStatus.ACCEPTED);
+        return generateRefreshTokenResponse(authResponse);
     }
+
+    public ResponseEntity<AccessTokenDto> generateRefreshTokenResponse(AuthResponse authResponse) {
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.SET_COOKIE, generateRefreshTokenCookieAsString(authResponse.getRefreshTokenDto()))
+                .body(authResponse.getAccessTokenDto());
+    }
+
+    public String generateRefreshTokenCookieAsString(RefreshTokenDto refreshTokenDto) {
+        return   ResponseCookie
+                .from("refresh-token", refreshTokenDto.getToken())
+                .httpOnly(true)
+                .path("/")
+                .maxAge(refreshTokenDto.getMaxAgeSeconds())
+                .build().toString();
+    }
+
 
     @DeleteMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody RefreshTokenRequest refreshTokenRequest) {
-        RefreshToken refreshToken = modelMapper.map(refreshTokenRequest, RefreshToken.class);
-        refreshTokenService.deleteRefreshToken(refreshToken);
-        return ResponseEntity.status(HttpStatus.OK).body("Refresh Token Deleted Successfully!!");
+    public ResponseEntity<Void> logout(@CookieValue(name = "refresh-token") String token) {
+        refreshTokenService.deleteRefreshToken(authMapper.mapToRefreshToken(token));
+
+        RefreshTokenDto refreshTokenDto = new RefreshTokenDto("", 0L);
+
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.SET_COOKIE, generateRefreshTokenCookieAsString(refreshTokenDto)).build();
     }
 }

@@ -1,19 +1,28 @@
 package tsar.alex.controller;
 
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tsar.alex.model.User;
+import tsar.alex.service.AuthService;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@AllArgsConstructor
 public class ResourceController {
 
-    @GetMapping("/home")
-    public ResponseEntity<String> getHomePage() {
+    private final AuthService authService;
 
-        return new ResponseEntity<>("Hello! This is our home page", HttpStatus.OK);
+    @GetMapping("/profile")
+    public ResponseEntity<Map<String, String>> getHomePage() {
+        User user = authService.getCurrentUser();
+        Map<String, String> profile = Map.of("profile", "with name " + user.getUsername() + " and id = " + user.getId());
+        return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 }

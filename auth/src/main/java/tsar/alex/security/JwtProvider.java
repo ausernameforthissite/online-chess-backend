@@ -21,10 +21,8 @@ public class JwtProvider {
 
     public AccessToken generateTokenWithUsername(String username) {
 
-        Instant expiresAt = Instant.now().plusSeconds(jwtExpirationSeconds);
-
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("online-chess-dispatcher")
+                .issuer("online-chess-auth")
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(jwtExpirationSeconds))
                 .subject(username)
@@ -33,7 +31,7 @@ public class JwtProvider {
 
         String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
-        return new AccessToken(token, expiresAt);
+        return new AccessToken(token);
     }
 
 }

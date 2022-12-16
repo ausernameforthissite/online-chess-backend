@@ -1,10 +1,7 @@
 # Database properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/online_chess_db
-#spring.datasource.username=grandmaster
-#spring.datasource.password=P@$$w0rd
-
-spring.datasource.username=postgres
-spring.datasource.password=QPj4pRWMTEgMDqEsbdDg
+spring.datasource.username=
+spring.datasource.password=
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true
 

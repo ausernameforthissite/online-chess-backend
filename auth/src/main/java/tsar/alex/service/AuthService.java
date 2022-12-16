@@ -7,16 +7,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tsar.alex.dto.AccessTokenDto;
 import tsar.alex.dto.AuthResponse;
+import tsar.alex.dto.RefreshTokenDto;
+import tsar.alex.mapper.AuthMapper;
 import tsar.alex.model.AccessToken;
 import tsar.alex.model.RefreshToken;
 import tsar.alex.model.User;
 import tsar.alex.repository.UserRepository;
 import tsar.alex.security.JwtProvider;
-
-import java.time.Instant;
 
 @Service
 @AllArgsConstructor
@@ -24,13 +26,13 @@ import java.time.Instant;
 public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
+    private final AuthMapper authMapper;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
     public void register(User user) {
-        user.setCreatedAt(Instant.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
@@ -44,23 +46,30 @@ public class AuthService {
         User persistentUser = userRepository.findByUsername(user.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "No user with such username!"));
-        return generateAuthResponseWithBothTokens(persistentUser);
+        return generateAuthResponse(persistentUser);
+    }
+
+    @Transactional(readOnly = true)
+    public User getCurrentUser() {
+        Jwt principal = (Jwt) SecurityContextHolder.
+                getContext().getAuthentication().getPrincipal();
+        return userRepository.findByUsername(principal.getSubject())
+                .orElseThrow(() -> new UsernameNotFoundException("User name not found - " + principal.getSubject()));
     }
 
     public AuthResponse refreshToken(RefreshToken refreshToken) {
         User user = refreshTokenService.validateRefreshTokenAndRetrieveUser(
-                refreshToken.getToken());
-        return generateAuthResponseWithBothTokens(user);
+                refreshToken);
+        return generateAuthResponse(user);
     }
 
-    public AuthResponse generateAuthResponseWithBothTokens(User user) {
-        AccessToken accessToken = jwtProvider.generateTokenWithUsername(user.getUsername());
-        RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
 
-        return AuthResponse.builder()
-                .accessToken(accessToken.getToken())
-                .expiresAt(accessToken.getExpiresAt())
-                .refreshToken(refreshToken.getToken())
-                .build();
+    public AuthResponse generateAuthResponse(User user) {
+        AccessToken accessToken = jwtProvider.generateTokenWithUsername(user.getUsername());
+        AccessTokenDto accessTokenDto = authMapper.mapToAccessTokenDto(accessToken);
+        RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
+        RefreshTokenDto refreshTokenDto = authMapper.mapToRefreshTokenDto(refreshToken);
+
+        return authMapper.mapToAuthResponse(accessTokenDto, refreshTokenDto);
     }
 }

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class User {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @OneToOne(mappedBy = "user")
-    private RefreshToken refreshToken;
+    @OneToMany(mappedBy = "user")
+    private List<RefreshToken> refreshToken;
 
 }

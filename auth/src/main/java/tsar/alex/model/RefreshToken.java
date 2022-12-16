@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -27,7 +26,10 @@ public class RefreshToken {
     @Column(name = "expires_at")
     private Instant expiresAt;
 
-    @OneToOne
+    @Transient
+    private Long maxAge;
+
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 }
