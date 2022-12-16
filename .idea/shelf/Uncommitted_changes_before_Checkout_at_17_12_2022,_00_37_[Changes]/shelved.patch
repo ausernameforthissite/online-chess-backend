@@ -1,0 +1,76 @@
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	
++++ b/.idea/workspace.xml	
+@@ -4,30 +4,9 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="Create minimal working auth service">
+-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/RefreshTokenDto.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/mapper/AuthMapper.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/auth/src/main/resources/application.properties.origin" afterDir="false" />
++    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="### Refactoring ###&#10;1. Change mapper library to MapStruct;&#10;2. Change models, DTOs and corresponding controllers and services logic;&#10;3. Now user can have more than one refresh token at the same time;&#10;4. Add scheduler method to clean up refresh token table regularly;&#10;5. Add application.properties.origin instead of actual application.properties file to hide sensitive personal data.">
+       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/auth/pom.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/DispatcherApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/AuthApplication.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/AuthController.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/ResourceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/ResourceController.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/AuthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/AuthResponse.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/LoginRequest.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/RefreshTokenRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/AccessTokenDto.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/RegisterRequest.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/AccessToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/AccessToken.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/RefreshToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/RefreshToken.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/User.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/repository/RefreshTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/repository/RefreshTokenRepository.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/JwtProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/JwtProvider.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/AuthService.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/RefreshTokenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/RefreshTokenService.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/resources/application.properties" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/auth/src/main/resources/sql/auth_db.sql" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/resources/sql/auth_db.sql" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -138,7 +117,7 @@
+       <workItem from="1669737012508" duration="39499000" />
+       <workItem from="1670388946208" duration="2035000" />
+       <workItem from="1670395049314" duration="1899000" />
+-      <workItem from="1670397162089" duration="26790000" />
++      <workItem from="1670397162089" duration="27525000" />
+     </task>
+     <task id="LOCAL-00001" summary="Initial commit">
+       <created>1669716108577</created>
+@@ -154,7 +133,14 @@
+       <option name="project" value="LOCAL" />
+       <updated>1669865181154</updated>
+     </task>
+-    <option name="localTasksCounter" value="3" />
++    <task id="LOCAL-00003" summary="### Refactoring ###&#10;1. Change mapper library to MapStruct;&#10;2. Change models, DTOs and corresponding controllers and services logic;&#10;3. Now user can have more than one refresh token at the same time;&#10;4. Add scheduler method to clean up refresh token table regularly;&#10;5. Add application.properties.origin instead of actual application.properties file to hide sensitive personal data.">
++      <created>1671210850941</created>
++      <option name="number" value="00003" />
++      <option name="presentableId" value="LOCAL-00003" />
++      <option name="project" value="LOCAL" />
++      <updated>1671210850941</updated>
++    </task>
++    <option name="localTasksCounter" value="4" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -197,6 +183,8 @@
+   <component name="VcsManagerConfiguration">
+     <MESSAGE value="Initial commit" />
+     <MESSAGE value="Create minimal working auth service" />
+-    <option name="LAST_COMMIT_MESSAGE" value="Create minimal working auth service" />
++    <MESSAGE value="1. Change mapper library to MapStruct;&#10;2. Change models, DTOs and corresponding controllers and services logic;&#10;3. Now user can have more than one refresh token at the same time;&#10;4. Add scheduler method to clean up refresh token table regularly;&#10;5. Add application.properties.origin instead of actual application.properties file to hide sensitive personal data." />
++    <MESSAGE value="### Refactoring ###&#10;1. Change mapper library to MapStruct;&#10;2. Change models, DTOs and corresponding controllers and services logic;&#10;3. Now user can have more than one refresh token at the same time;&#10;4. Add scheduler method to clean up refresh token table regularly;&#10;5. Add application.properties.origin instead of actual application.properties file to hide sensitive personal data." />
++    <option name="LAST_COMMIT_MESSAGE" value="### Refactoring ###&#10;1. Change mapper library to MapStruct;&#10;2. Change models, DTOs and corresponding controllers and services logic;&#10;3. Now user can have more than one refresh token at the same time;&#10;4. Add scheduler method to clean up refresh token table regularly;&#10;5. Add application.properties.origin instead of actual application.properties file to hide sensitive personal data." />
+   </component>
+ </project>
+\ No newline at end of file
