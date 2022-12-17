@@ -2,9 +2,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-auth/src/main/resources/app.key
-auth/src/main/resources/app.pub
-auth/src/main/resources/application.properties
+*.pub
+*.key
+*.properties
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
