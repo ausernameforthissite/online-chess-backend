@@ -5,53 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="Create matcher module">
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/WebConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/InitializeUserRatingRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/StartMatchRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/StartMatchResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/enums/StartMatchEnum.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/model/Pair.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/Constants.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/GameMasterApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/Match.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/repository/MatchRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/security/SecurityConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/security/WebConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/StartMatchService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/resources/application.properties.origin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game-master/src/main/resources/sql/match_db.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/controller/FindMatchController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/FindMatchError.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/FindMatchResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/FindMatchResult.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/mapper/MatcherMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/UserRating.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/UserWaitingForMatch.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/repository/UserRatingRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/security/SecurityConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/security/WebConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/service/MatcherService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/1c317b5b-19a2-41a8-a587-2406bd962a03.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/1c317b5b-19a2-41a8-a587-2406bd962a03.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/78b94a64-01bd-4b16-a363-d9f1a49b2f83.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/78b94a64-01bd-4b16-a363-d9f1a49b2f83.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/8a5fb5d4-946d-40ef-8335-eb38ecf5e470.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/8a5fb5d4-946d-40ef-8335-eb38ecf5e470.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/auth/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/AuthApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/AuthApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/ResourceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/ResourceController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/mapper/AuthMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/mapper/AuthMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/JwtProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/JwtProvider.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/RefreshTokenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/RefreshTokenService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/MatcherApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/MatcherApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth/src/main/resources/application.properties.origin" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/resources/application.properties.origin" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +35,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="matcher" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -117,7 +76,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "jdk.selected.JAVA_MODULE": "17",
-    "last_opened_file_path": "/home/aleksander/Desktop/Projects/Online Chess/online-chess-backend/common/src/main/java/tsar/alex/dto",
+    "last_opened_file_path": "/home/aleksander/Desktop/Projects/Online Chess/online-chess-backend/auth/src/main/resources",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
@@ -132,6 +91,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/auth/src/main/resources" />
       <recent name="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto" />
       <recent name="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/security" />
       <recent name="$PROJECT_DIR$/game-master/src/main/resources" />
@@ -142,7 +102,7 @@
       <recent name="tsar.alex.dto" />
     </key>
   </component>
-  <component name="RunManager" selected="Spring Boot.MatcherApplication">
+  <component name="RunManager" selected="Spring Boot.GameMasterApplication">
     <configuration name="Program" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="tsar.alex.Program" />
       <module name="matcher" />
@@ -205,11 +165,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Spring Boot.GameMasterApplication" />
         <item itemvalue="Spring Boot.MatcherApplication" />
         <item itemvalue="Spring Boot.AuthApplication" />
-        <item itemvalue="Spring Boot.GameMasterApplication" />
         <item itemvalue="Application.Program" />
-        <item itemvalue="Spring Boot.AuthApplication" />
+        <item itemvalue="Spring Boot.MatcherApplication" />
       </list>
     </recent_temporary>
   </component>
