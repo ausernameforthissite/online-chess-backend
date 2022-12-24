@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Component;
 import tsar.alex.model.AccessToken;
+import tsar.alex.model.User;
 
 import java.time.Instant;
 
@@ -19,13 +20,13 @@ public class JwtProvider {
     @Value("${jwt.expiration-time.seconds}")
     private Long jwtExpirationSeconds;
 
-    public AccessToken generateTokenWithUsername(String username) {
+    public AccessToken generateToken(User user) {
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("online-chess-auth")
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(jwtExpirationSeconds))
-                .subject(username)
+                .claim("user_id", user.getId())
                 .claim("scope", "ROLE_USER")
                 .build();
 

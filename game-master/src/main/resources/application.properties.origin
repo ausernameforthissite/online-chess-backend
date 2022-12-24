@@ -1,0 +1,13 @@
+# Database properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/matcher_db
+
+spring.datasource.username=
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+
+# Authentication/authorization
+jwt.public.key=classpath:app.pub
+
+# Sever properties
+server.port=8081

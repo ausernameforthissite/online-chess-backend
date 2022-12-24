@@ -32,4 +32,7 @@ public interface AuthMapper {
     @Mapping(target = "accessTokenDto", source = "accessTokenDto")
     @Mapping(target = "refreshTokenDto", source = "refreshTokenDto")
     AuthResponse mapToAuthResponse(AccessTokenDto accessTokenDto, RefreshTokenDto refreshTokenDto);
+
+    @Mapping(target = "userId", source = "id")
+    InitializeUserRatingRequest mapToInitializeRatingRequest(User user);
 }

@@ -1,6 +1,7 @@
 package tsar.alex.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -10,8 +11,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import tsar.alex.dto.AccessTokenDto;
 import tsar.alex.dto.AuthResponse;
+import tsar.alex.dto.InitializeUserRatingRequest;
 import tsar.alex.dto.RefreshTokenDto;
 import tsar.alex.mapper.AuthMapper;
 import tsar.alex.model.AccessToken;
@@ -25,6 +28,7 @@ import tsar.alex.security.JwtProvider;
 @Transactional
 public class AuthService {
 
+    private final RestTemplate restTemplate;
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
     private final UserRepository userRepository;
@@ -34,7 +38,10 @@ public class AuthService {
 
     public void register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        User persistentUser = userRepository.save(user);
+
+        HttpEntity<InitializeUserRatingRequest> httpRequest = new HttpEntity<>(authMapper.mapToInitializeRatingRequest(persistentUser));
+        HttpEntity<Void> response = restTemplate.postForEntity("http://localhost:8081/api/initialize_user_rating", httpRequest, Void.class);
     }
 
     public AuthResponse login(User user) {
@@ -53,8 +60,8 @@ public class AuthService {
     public User getCurrentUser() {
         Jwt principal = (Jwt) SecurityContextHolder.
                 getContext().getAuthentication().getPrincipal();
-        return userRepository.findByUsername(principal.getSubject())
-                .orElseThrow(() -> new UsernameNotFoundException("User name not found - " + principal.getSubject()));
+        return userRepository.findById(principal.getClaim("user_id"))
+                .orElseThrow(() -> new UsernameNotFoundException("User with id " + principal.getClaim("user_id") + " was not found - " ));
     }
 
     public AuthResponse refreshToken(RefreshToken refreshToken) {
@@ -65,7 +72,7 @@ public class AuthService {
 
 
     public AuthResponse generateAuthResponse(User user) {
-        AccessToken accessToken = jwtProvider.generateTokenWithUsername(user.getUsername());
+        AccessToken accessToken = jwtProvider.generateToken(user);
         AccessTokenDto accessTokenDto = authMapper.mapToAccessTokenDto(accessToken);
         RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
         RefreshTokenDto refreshTokenDto = authMapper.mapToRefreshTokenDto(refreshToken);

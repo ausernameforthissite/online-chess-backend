@@ -11,6 +11,8 @@
     <modules>
         <module>auth</module>
         <module>matcher</module>
+        <module>game-master</module>
+        <module>common</module>
     </modules>
 
     <properties>

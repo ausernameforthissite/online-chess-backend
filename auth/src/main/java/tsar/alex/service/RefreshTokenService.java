@@ -51,7 +51,7 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteByToken(refreshToken.getToken());
     }
 
-    @Scheduled(fixedDelay = 90 * 1000, initialDelay = 90 * 1000)
+    @Scheduled(fixedDelay = 3600 * 1000, initialDelay = 3600 * 1000)
     public void deleteExpiredTokensFromDB() {
         Instant dateTime = Instant.now();
         refreshTokenRepository.deleteByExpiresAtBefore(dateTime);

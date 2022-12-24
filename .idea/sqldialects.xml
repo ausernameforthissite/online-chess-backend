@@ -2,6 +2,7 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/auth/src/main/resources/sql/auth_db.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/game-master/src/main/resources/sql/match_db.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/matcher/src/main/resources/sql/matcher_db.sql" dialect="PostgreSQL" />
   </component>
 </project>
