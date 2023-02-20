@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="@localhost">
+  <database-model serializer="dbm" dbms="MONGO" family-id="MONGO" format-version="4.43">
+    <root id="1">
+      <ServerVersion>4.4.11</ServerVersion>
+    </root>
+    <schema id="2" parent="1" name="admin"/>
+    <schema id="3" parent="1" name="config"/>
+    <schema id="4" parent="1" name="local"/>
+    <schema id="5" parent="1" name="match_db"/>
+    <table id="6" parent="5" name="match"/>
+    <table id="7" parent="5" name="match_record"/>
+    <table id="8" parent="5" name="sequence"/>
+    <column id="9" parent="6" name="_id">
+      <DataType>Int64|12s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="10" parent="6" name="boardState">
+      <DataType>Array|2003s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="11" parent="6" name="finished">
+      <DataType>Boolean|12s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="12" parent="6" name="usersInMatch">
+      <DataType>Object|4999544s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="13" parent="6" name="_class">
+      <DataType>String|12s</DataType>
+      <Position>2</Position>
+    </column>
+    <column id="14" parent="6" name="usersInMatch.currentTurnUserColor">
+      <DataType>String|12s</DataType>
+      <Position>2</Position>
+    </column>
+    <column id="15" parent="6" name="usersInMatch.usernames">
+      <DataType>Array|2003s</DataType>
+      <Position>3</Position>
+    </column>
+    <column id="16" parent="7" name="_id">
+      <DataType>Int64|12s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="17" parent="7" name="_class">
+      <DataType>String|12s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="18" parent="7" name="chessMovesRecord">
+      <DataType>list|4999545s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="19" parent="8" name="_id">
+      <DataType>String|12s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="20" parent="8" name="_class">
+      <DataType>String|12s</DataType>
+      <Position>1</Position>
+    </column>
+    <column id="21" parent="8" name="seq">
+      <DataType>Int64|12s</DataType>
+      <Position>1</Position>
+    </column>
+  </database-model>
+</dataSource>

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="Merge Matcher to Master">
+    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="### Basic game-master service implementation (with SSE) ###&#10;1. Partially implement chess game logic with subscription on chess moved based on Server Sent Events (not the best option).&#10;2. Move to using username as id for User class (instead of long id).&#10;3. Replace PostgreSQL by MongoDB in game-master service.">
       <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/ErrorResponse.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/MakeMoveBadResponse.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/MakeMoveOKResponse.java" afterDir="false" />
@@ -277,7 +277,7 @@
       <workItem from="1675331233349" duration="48422000" />
       <workItem from="1676221675754" duration="765000" />
       <workItem from="1676226412483" duration="742000" />
-      <workItem from="1676227838717" duration="23882000" />
+      <workItem from="1676227838717" duration="24722000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1669716108577</created>
@@ -307,7 +307,14 @@
       <option name="project" value="LOCAL" />
       <updated>1671870564074</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="### Basic game-master service implementation (with SSE) ###&#10;1. Partially implement chess game logic with subscription on chess moved based on Server Sent Events (not the best option).&#10;2. Move to using username as id for User class (instead of long id).&#10;3. Replace PostgreSQL by MongoDB in game-master service.">
+      <created>1676908016856</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1676908016856</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -352,6 +359,7 @@
     <MESSAGE value="Create minimal working auth service" />
     <MESSAGE value="Create matcher module" />
     <MESSAGE value="Merge Matcher to Master" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merge Matcher to Master" />
+    <MESSAGE value="### Basic game-master service implementation (with SSE) ###&#10;1. Partially implement chess game logic with subscription on chess moved based on Server Sent Events (not the best option).&#10;2. Move to using username as id for User class (instead of long id).&#10;3. Replace PostgreSQL by MongoDB in game-master service." />
+    <option name="LAST_COMMIT_MESSAGE" value="### Basic game-master service implementation (with SSE) ###&#10;1. Partially implement chess game logic with subscription on chess moved based on Server Sent Events (not the best option).&#10;2. Move to using username as id for User class (instead of long id).&#10;3. Replace PostgreSQL by MongoDB in game-master service." />
   </component>
 </project>
