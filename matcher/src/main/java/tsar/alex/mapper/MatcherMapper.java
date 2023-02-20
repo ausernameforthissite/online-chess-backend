@@ -11,11 +11,11 @@ import tsar.alex.model.UserWaitingForMatch;
 @Mapper(componentModel = "spring")
 public interface MatcherMapper {
 
-    @Mapping(target = "userId", source = "userId")
+    @Mapping(target = "username", source = "username")
     @Mapping(target = "rating", expression = "java(tsar.alex.utils.Constants.getInitialUserRating())")
     UserRating mapToUserRating(InitializeUserRatingRequest request);
 
-    @Mapping(target = "pairOfUsersIds", expression = "java(new tsar.alex.model.Pair(user0.getUserRating().getUserId(), user1.getUserRating().getUserId()))")
+    @Mapping(target = "pairOfUsernames", expression = "java(new tsar.alex.model.Pair(user0.getUserRating().getUsername(), user1.getUserRating().getUsername()))")
     StartMatchRequest mapToStartMatchRequest(UserWaitingForMatch user0, UserWaitingForMatch user1);
 
     default Pair<UserWaitingForMatch> mapToUsersPair(UserWaitingForMatch user0, UserWaitingForMatch user1) {

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.*;
 
@@ -11,19 +12,14 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity(name = "match")
+@Document(collection = "match")
 public class Match {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    private long id;
+    private boolean finished;
+    private UsersInMatch usersInMatch;
+    private ChessCoords enPassantPawnCoords;
+    private ChessPiece[][] boardState;
 
-    @Column(name = "white_user_id")
-    private Long whiteUserId;
-
-    @Column(name = "black_user_id")
-    private Long blackUserId;
-
-    @Column(name = "is_finished")
-    private Boolean isFinished;
 }

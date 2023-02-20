@@ -12,6 +12,7 @@ import tsar.alex.model.User;
 import tsar.alex.service.AuthService;
 import tsar.alex.service.RefreshTokenService;
 
+
 @RestController
 @RequestMapping("/api/auth")
 @AllArgsConstructor
@@ -22,17 +23,16 @@ public class AuthController {
     private final AuthMapper authMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody RegisterRequest registerRequest) {
-        User user = authMapper.mapToUser(registerRequest);
+    public ResponseEntity<Void> register(@RequestBody AuthRequest authRequest) {
+        User user = authMapper.mapToUser(authRequest);
         authService.register(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AccessTokenDto> login(@RequestBody LoginRequest loginRequest) {
-        User user = authMapper.mapToUser(loginRequest);
+    public ResponseEntity<AccessTokenDto> login(@RequestBody AuthRequest authRequest) {
+        User user = authMapper.mapToUser(authRequest);
         AuthResponse authResponse = authService.login(user);
-
         return generateRefreshTokenResponse(authResponse);
     }
 

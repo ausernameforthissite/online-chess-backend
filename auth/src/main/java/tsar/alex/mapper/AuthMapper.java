@@ -12,12 +12,7 @@ public interface AuthMapper {
 
     @Mapping(target = "username", source = "username")
     @Mapping(target = "password", source = "password")
-    @Mapping(target = "createdAt", expression = "java(java.time.Instant.now())")
-    User mapToUser(RegisterRequest registerRequest);
-
-    @Mapping(target = "username", source = "username")
-    @Mapping(target = "password", source = "password")
-    User mapToUser(LoginRequest loginRequest);
+    User mapToUser(AuthRequest authRequest);
 
     @Mapping(target = "token", source = "token")
     RefreshToken mapToRefreshToken(String token);
@@ -33,6 +28,6 @@ public interface AuthMapper {
     @Mapping(target = "refreshTokenDto", source = "refreshTokenDto")
     AuthResponse mapToAuthResponse(AccessTokenDto accessTokenDto, RefreshTokenDto refreshTokenDto);
 
-    @Mapping(target = "userId", source = "id")
+    @Mapping(target = "username", source = "username")
     InitializeUserRatingRequest mapToInitializeRatingRequest(User user);
 }

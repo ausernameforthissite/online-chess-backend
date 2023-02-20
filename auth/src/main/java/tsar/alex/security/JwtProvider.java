@@ -26,7 +26,7 @@ public class JwtProvider {
                 .issuer("online-chess-auth")
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(jwtExpirationSeconds))
-                .claim("user_id", user.getId())
+                .claim("username", user.getUsername())
                 .claim("scope", "ROLE_USER")
                 .build();
 

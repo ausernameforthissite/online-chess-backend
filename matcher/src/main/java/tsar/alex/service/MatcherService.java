@@ -42,7 +42,7 @@ public class MatcherService {
 
 
     public boolean initializeUserRating(UserRating userRating) {
-        if (userRatingRepository.existsByUserId(userRating.getUserId())) {
+        if (userRatingRepository.existsByUsername(userRating.getUsername())) {
             return false;
         } else {
             userRatingRepository.save(userRating);
@@ -76,18 +76,19 @@ public class MatcherService {
     }
 
     private UserRating getCurrentUserRating() {
-        Long currentUserId = getCurrentUserId();
-        return userRatingRepository.findById(currentUserId).orElseThrow(() -> new UsernameNotFoundException("No rating was found for user with id = " + currentUserId));
+        String currentUsername = getCurrentUsername();
+        return userRatingRepository.findById(currentUsername).orElseThrow(() -> new UsernameNotFoundException("No rating was found for user with name = " + currentUsername));
     }
 
-    public Long getCurrentUserId() {
+    public String getCurrentUsername() {
         Jwt principal = (Jwt) SecurityContextHolder.
                 getContext().getAuthentication().getPrincipal();
-        return principal.getClaim("user_id");
+        return principal.getClaim("username");
     }
 
     @Scheduled(fixedDelay = 30 * 1000, initialDelay = 30 * 1000)
     public void findPairsAndInitiateMatches() {
+        System.out.println("Inside scheduler");
 
         UserWaitingForMatch[] UWFMArray;
 
@@ -96,6 +97,7 @@ public class MatcherService {
                 return;
             }
             UWFMArray = UWFMSet.toArray(new UserWaitingForMatch[0]);
+            System.out.println(Arrays.toString(UWFMArray));
         }
 
         Arrays.sort(UWFMArray);
@@ -135,8 +137,9 @@ public class MatcherService {
 
         @Override
         public void run() {
-            StartMatchResponse response = new RestTemplate().postForObject("http://localhost:8082/api/start_match", new HttpEntity<>(request), StartMatchResponse.class);
-
+            System.out.println("Sending request");
+            StartMatchResponse response = new RestTemplate().postForObject("http://localhost:8082/api/match/start", new HttpEntity<>(request), StartMatchResponse.class);
+            System.out.println("Request was send");
             if (response != null) {
                 Long matchId = response.getMatchId();
 

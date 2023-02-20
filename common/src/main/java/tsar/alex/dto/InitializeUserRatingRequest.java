@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InitializeUserRatingRequest {
-    private Long userId;
+    private String username;
 }

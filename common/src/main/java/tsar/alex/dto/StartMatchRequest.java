@@ -12,5 +12,5 @@ import tsar.alex.model.Pair;
 @ToString
 public class StartMatchRequest {
 
-    private Pair<Long> pairOfUsersIds;
+    private Pair<String> pairOfUsernames;
 }

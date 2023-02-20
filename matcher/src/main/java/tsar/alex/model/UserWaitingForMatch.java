@@ -21,12 +21,12 @@ public class UserWaitingForMatch implements Comparable<UserWaitingForMatch> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserWaitingForMatch that = (UserWaitingForMatch) o;
-        return Objects.equals(userRating.getUserId(), that.userRating.getUserId());
+        return Objects.equals(userRating.getUsername(), that.userRating.getUsername());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userRating.getUserId());
+        return Objects.hash(userRating.getUsername());
     }
 
     @Override

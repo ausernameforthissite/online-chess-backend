@@ -11,7 +11,6 @@ import tsar.alex.model.User;
 import tsar.alex.repository.UserRepository;
 
 import java.util.Collections;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -22,10 +21,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        User user = userOptional
-                .orElseThrow(() -> new UsernameNotFoundException("No user " +
-                        "found with username: " + username));
+        User user = userRepository.findById(username).orElseThrow(()
+                    -> new UsernameNotFoundException("No user found with username: " + username));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(), user.getPassword(),

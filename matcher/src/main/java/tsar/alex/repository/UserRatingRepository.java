@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import tsar.alex.model.UserRating;
 
 @Repository
-public interface UserRatingRepository extends JpaRepository<UserRating, Long> {
+public interface UserRatingRepository extends JpaRepository<UserRating, String> {
 
-    boolean existsByUserId(Long userId);
+    boolean existsByUsername(String username);
 }

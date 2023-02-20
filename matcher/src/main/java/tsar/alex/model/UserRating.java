@@ -15,8 +15,8 @@ import javax.persistence.Id;
 public class UserRating {
 
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "username")
+    private String username;
 
     @Column(name = "user_rating")
     private Short rating;

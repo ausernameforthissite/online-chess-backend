@@ -30,7 +30,7 @@ public class RefreshToken {
     private Long maxAge;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "username", referencedColumnName = "username")
     private User user;
 }
 
