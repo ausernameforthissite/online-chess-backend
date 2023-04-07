@@ -18,10 +18,6 @@ public class King extends ChessPiece {
     public King() {
     }
 
-    public King(ChessColor color) {
-        super(color);
-    }
-
     public King(ChessColor color, boolean firstMove) {
         super(color);
         this.firstMove = firstMove;
@@ -90,7 +86,6 @@ public class King extends ChessPiece {
                 myRook.setFirstMove(false);
                 boardState[numberCoord][startLetterCoord] = null;
                 boardState[numberCoord][rookInitialLetterCoord] = null;
-
                 return true;
             }
         }
@@ -106,14 +101,14 @@ public class King extends ChessPiece {
         int newNumberCoord;
         int newLetterCoord;
 
-        for (int i = -1; i < 1; i++) {
+        for (int i = -1; i <= 1; i++) {
             newNumberCoord = startNumberCoord + i;
 
             if (!ChessGameUtils.isCoordPossible(newNumberCoord)) {
                 continue;
             }
 
-            for (int j = -1; j < 1; j++) {
+            for (int j = -1; j <= 1; j++) {
                 if (i == 0 && j == 0) {
                     continue;
                 }
@@ -124,11 +119,11 @@ public class King extends ChessPiece {
                     continue;
                 }
 
+
                 if (!(boardState[newNumberCoord][newLetterCoord] != null
                     && boardState[newNumberCoord][newLetterCoord].getColor() == this.color)) {
-
-                    if (!willBeCheck(boardState, startCoords, new ChessCoords(newNumberCoord, newLetterCoord),
-                            kingCoords, this.color)) {
+                    ChessCoords endCoords = new ChessCoords(newNumberCoord, newLetterCoord);
+                    if (!willBeCheck(boardState, startCoords, endCoords, endCoords, this.color)) {
                         return true;
                     }
                 }

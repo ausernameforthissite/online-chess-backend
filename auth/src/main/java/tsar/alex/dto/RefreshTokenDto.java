@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RefreshTokenDto {
     private String token;
-    private Long maxAgeSeconds;
+    private long maxAgeSeconds;
 }

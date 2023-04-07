@@ -11,6 +11,5 @@ import tsar.alex.model.Pair;
 @NoArgsConstructor
 @ToString
 public class StartMatchRequest {
-
     private Pair<String> pairOfUsernames;
 }

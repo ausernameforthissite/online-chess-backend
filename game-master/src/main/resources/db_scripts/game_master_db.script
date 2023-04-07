@@ -1,0 +1,5 @@
+use match_db;
+db.match.drop();
+db.match_record.drop();
+db.createCollection("match");
+db.createCollection("match_record");

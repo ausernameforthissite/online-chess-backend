@@ -15,9 +15,6 @@ public class Rook extends ChessPiece {
     public Rook() {
     }
 
-    public Rook(ChessColor color) {
-        super(color);
-    }
 
     public Rook(ChessColor color, boolean firstMove) {
         super(color);
@@ -38,6 +35,7 @@ public class Rook extends ChessPiece {
     @Override
     protected boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords) {
         ChessPiece[][] boardState = match.getBoardState();
+        System.out.println("rook");
         return checkGoVertical(boardState, startCoords, kingCoords, this.color)
                 || checkGoHorizontal(boardState, startCoords, kingCoords, this.color);
     }

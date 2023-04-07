@@ -3,12 +3,14 @@ package tsar.alex.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Objects;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class ChessCoords {
     private int numberCoord;
     private int letterCoord;
@@ -27,14 +29,4 @@ public class ChessCoords {
         return Objects.hash(letterCoord, numberCoord);
     }
 
-    @Override
-    public Object clone() {
-        ChessCoords chessCoords = null;
-        try {
-            chessCoords = (ChessCoords) super.clone();
-        } catch (CloneNotSupportedException e) {
-            System.out.println("Exception"); //TODO
-        }
-        return chessCoords;
-    }
 }

@@ -19,10 +19,6 @@ public class Pawn extends ChessPiece {
     public Pawn() {
     }
 
-    public Pawn(ChessColor color) {
-        super(color);
-    }
-
     public Pawn(ChessColor color, boolean firstMove) {
         super(color);
         this.firstMove = firstMove;
@@ -30,10 +26,7 @@ public class Pawn extends ChessPiece {
 
     @Override
     public boolean makeMoveIfPossible(Match match, ChessMove chessMove) {
-        ChessCoords previousEnPassantCoords = match.getEnPassantPawnCoords();
-        if (previousEnPassantCoords != null) {
-            chessMove.setPreviousEnPassantCoords((ChessCoords) previousEnPassantCoords.clone());
-        }
+        chessMove.setPreviousEnPassantCoords(match.getEnPassantPawnCoords());
 
         ChessPiece[][] boardState = match.getBoardState();
 

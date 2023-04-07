@@ -15,7 +15,6 @@ import static tsar.alex.utils.ChessGameConstants.BOARD_LENGTH;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(  use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
         property = "type")
 @JsonSubTypes({
     @JsonSubTypes.Type(value = Bishop.class, name = "bishop"),
@@ -48,15 +47,12 @@ public abstract class ChessPiece implements Cloneable {
         ChessCoords kingCoords = this instanceof King ? endCoords : findKingCoords(boardState, this.color);
 
         if (!willBeCheck(boardState, startCoords, endCoords, kingCoords, this.color)) {
-            ChessCoords previousEnPassantCoords = match.getEnPassantPawnCoords();
-            if (previousEnPassantCoords != null) {
-                chessMove.setPreviousEnPassantCoords(previousEnPassantCoords);
+            chessMove.setPreviousEnPassantCoords(match.getEnPassantPawnCoords());
 
-            }
             match.setEnPassantPawnCoords(null);
 
-
-            chessMove.setEndPieceFirstMove(isEndPieceFirstMove(boardState[endCoords.getNumberCoord()][endCoords.getLetterCoord()]));
+            chessMove.setEndPieceFirstMove(isEndPieceFirstMove(
+                                            boardState[endCoords.getNumberCoord()][endCoords.getLetterCoord()]));
 
             changeBoardStateOneMove(boardState, startCoords, endCoords);
             return true;
@@ -147,6 +143,7 @@ public abstract class ChessPiece implements Cloneable {
         for (int i = 0; i < BOARD_LENGTH; i++) {
             for (int j = 0; j < BOARD_LENGTH; j++) {
                 ChessPiece chessPiece = boardState[i][j];
+
                 if (chessPiece != null && chessPiece.color == enemyColor
                     && chessPiece.doesPieceHavePossibleMoves(match, new ChessCoords(i, j), enemyKingCoords)) {
                     return true;
@@ -174,7 +171,7 @@ public abstract class ChessPiece implements Cloneable {
     // +
     protected static boolean checkGoVertical(ChessPiece[][] boardState, ChessCoords startCoords, ChessCoords kingCoords,
                                              ChessColor startPieceColor) {
-        for (int i = -1; i < 1; i += 2) {
+        for (int i = -1; i <= 1; i += 2) {
             if (checkGoLongMove(boardState, startCoords, kingCoords, i, 0, startPieceColor)) {
                 return true;
             }
@@ -185,7 +182,7 @@ public abstract class ChessPiece implements Cloneable {
     // +
     protected static boolean checkGoHorizontal(ChessPiece[][] boardState, ChessCoords startCoords, ChessCoords kingCoords,
                                                ChessColor startPieceColor) {
-        for (int j = -1; j < 1; j += 2) {
+        for (int j = -1; j <= 1; j += 2) {
             if (checkGoLongMove(boardState, startCoords, kingCoords, 0, j, startPieceColor)) {
                 return true;
             }
@@ -293,7 +290,7 @@ public abstract class ChessPiece implements Cloneable {
         try {
             chessPiece = (ChessPiece) super.clone();
         } catch (CloneNotSupportedException e) {
-            System.out.println("Exception"); //TODO
+            e.printStackTrace();
         }
         return chessPiece;
     }

@@ -3,28 +3,114 @@ package tsar.alex.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tsar.alex.dto.*;
+import tsar.alex.dto.websocket.request.ChessMatchWebsocketRequestEnum;
+import tsar.alex.dto.websocket.response.ChessMatchWebsocketResponseEnum;
+import tsar.alex.exception.ChessMatchWebsocketCloseConnectionException;
+import tsar.alex.mapper.GameMasterMapper;
 import tsar.alex.model.*;
-import tsar.alex.repository.MatchRecordRepository;
 import tsar.alex.repository.MatchRepository;
+import tsar.alex.utils.ChessFactory;
+import tsar.alex.utils.ChessGameConstants;
 import tsar.alex.utils.ChessGameUtils;
 import tsar.alex.utils.Utils;
-import tsar.alex.utils.sse.ChessMoveSseEmitters;
+import tsar.alex.utils.websocket.ChessMatchWebsocketRoom;
+import tsar.alex.utils.websocket.ChessMatchWebsocketRoomsHolder;
 
-import java.util.Map;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 
 @Service
 @AllArgsConstructor
 public class MatchService {
 
+    private final GameMasterMapper mapper;
+    private final ThreadLocalRandom threadLocalRandom;
 
-    private final Map<Long, ChessMoveSseEmitters> emitters;
-    private final ExecutorService threadPool;
+    private final ChessMatchWebsocketRoomsHolder chessMatchWebsocketRoomsHolder;
 
     private final MatchRepository matchRepository;
-    private final MatchRecordRepository matchRecordRepository;
+
+
+    public StartMatchResponse startMatch(Pair<String> usernames) {
+
+        String errorMessage = checkUsersToStartMatch(usernames);
+
+        if (errorMessage.length() > 0) {
+            return new StartMatchBadResponse(errorMessage);
+        }
+
+        boolean sameUsersOrder;
+        UsersInMatch usersInMatch;
+
+        if (threadLocalRandom.nextBoolean()) {
+            usersInMatch = new UsersInMatch(usernames.get(0), usernames.get(1));
+            sameUsersOrder = true;
+        } else {
+            usersInMatch = new UsersInMatch(usernames.get(1), usernames.get(0));
+            sameUsersOrder = false;
+        }
+
+        ChessPiece[][] initialBoardState = ChessFactory.getInitialBoardState();
+
+        ChessPositionsRecord initialChessPositionsRecord = new ChessPositionsRecord();
+        initialChessPositionsRecord.handleNewChessPosition(-1, initialBoardState);
+
+        Match match = Match.builder()
+                .startedAt(Instant.now())
+                .usersInMatch(usersInMatch)
+                .boardState(initialBoardState)
+                .chessMovesRecord(new ArrayList<>())
+                .chessPositionsRecord(initialChessPositionsRecord)
+                .build();
+
+        long matchId = matchRepository.save(match).getId();
+        ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.addMatchWebsocketRoom(matchId,
+                                                                                                usersInMatch);
+        matchWebsocketRoom.reentrantLock.lock();
+
+        try {
+            matchWebsocketRoom.setTimeoutFinisher(ChessColor.WHITE, TimeoutTypeEnum.TIME_IS_UP,
+                    ChessGameConstants.FIRST_MOVE_TIME_LEFT_MS);
+        } finally {
+            matchWebsocketRoom.reentrantLock.unlock();
+        }
+        return new StartMatchOkResponse(matchId, match.getStartedAt(), sameUsersOrder);
+    }
+
+    private String checkUsersToStartMatch(Pair<String> usernames) {
+        String errorMessage = "";
+
+        for (int i = 0; i < 2; i++) {
+            String username = usernames.get(i);
+            List<Match> activeMatchesForSpecificUser = matchRepository.findActiveMatchesByUsername(username);
+            int numberOfMatches = activeMatchesForSpecificUser.size();
+
+            if (numberOfMatches != 0) {
+
+                if (errorMessage.length() > 0) {
+                    errorMessage += ". ";
+                }
+
+                errorMessage += "User " + username + " is already in ";
+
+                if (numberOfMatches == 1) {
+                    errorMessage += "match with id = " + activeMatchesForSpecificUser.get(0).getId();
+                } else {
+                    List<Long> matchIds = activeMatchesForSpecificUser.stream().map(Match::getId).toList();
+                    errorMessage += "matches with ids = [" + matchIds.stream().map(String::valueOf)
+                            .collect(Collectors.joining(", ")) +"]";
+                }
+            }
+        }
+
+        return errorMessage;
+    }
 
 
     public MatchStateResponse getMatchState(long matchId) {
@@ -36,66 +122,106 @@ public class MatchService {
 
         Match match = matchOptional.get();
 
-        MatchRecord matchRecord = matchRecordRepository.findById(matchId).orElseThrow(()
-                -> new RuntimeException("match_record DB doesn't contain match with id = " + matchId));
-
-        return new MatchStateOkResponse(match, matchRecord.getChessMovesRecord());
+        return mapper.mapToMatchStateOkResponse(match);
     }
 
+    public void makeMove(long matchId, ChessMove chessMove) {
 
-    public MakeMoveResponse makeMove(long matchId, ChessMove chessMove) {
+        ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
-        if (!emitters.containsKey(matchId)) {
-            return new MakeMoveBadResponse("No active match with id = " + matchId + " was found");
+        if (matchWebsocketRoom == null) {
+            throw new ChessMatchWebsocketCloseConnectionException("No active match with id " + matchId + " was found");
         }
 
-        Match match = matchRepository.findById(matchId).orElseThrow(() -> new RuntimeException("match DB doesn't contain match with id = " + matchId + ". But emitters map does"));
+        matchWebsocketRoom.reentrantLock.lock();
 
-        if (match.isFinished()) {
-            return new MakeMoveBadResponse("Match with id = " + matchId + " is already finished.");
+        try {
+            matchWebsocketRoom.checkFinished();
+            String username = Utils.getCurrentUsername();
+            matchWebsocketRoom.checkSubscribed(username);
+
+            Match match = matchRepository.findById(matchId).orElseThrow(()
+                    -> new RuntimeException("match DB doesn't contain match with id = " + matchId
+                    + ". But chessMatchWebsocketRoomsHolder does"));
+
+            if (match.isFinished()) {
+                throw new RuntimeException("Match with id = " + matchId + " is already finished.");
+            }
+
+            UsersInMatch usersInMatch = match.getUsersInMatch();
+            int currentMoveNumber = match.getCurrentMoveNumber();
+
+            if (!username.equals(ChessGameUtils.getCurrentTurnUsername(usersInMatch, currentMoveNumber))) {
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketResponseEnum.CHESS_MOVE_BAD,
+                                                    username, "It's not your turn");
+                return;
+            }
+
+            ChessColor currentTurnUserColor = ChessGameUtils.getUserColorByMoveNumber(currentMoveNumber);
+            ChessPiece[][] boardState = match.getBoardState();
+            ChessCoords startCoords = chessMove.getStartCoords();
+
+            if (!ChessGameUtils.validateChessMove(chessMove, startCoords, currentTurnUserColor, boardState)) {
+                System.out.println("Move validation failed");
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketResponseEnum.CHESS_MOVE_BAD,
+                                                    username, "Bad move");
+                return;
+            }
+
+            ChessPiece startPiece = boardState[startCoords.getNumberCoord()][startCoords.getLetterCoord()];
+
+            if (!startPiece.makeMoveIfPossible(match, chessMove)) {
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketResponseEnum.CHESS_MOVE_BAD,
+                                                    username, "Bad move");
+                return;
+            }
+            chessMove.setMoveNumber(currentMoveNumber);
+
+            checkIfChessPositionIsChangedIrreversibly(match, chessMove);
+
+            ChessColor enemyColor = ChessColor.getInvertedColor(currentTurnUserColor);
+            updateTimeLeftAndLastMoveTime(match, chessMove, currentMoveNumber, currentTurnUserColor, enemyColor);
+
+            boolean finished = checkIfMatchIsFinished(match, chessMove, currentMoveNumber, currentTurnUserColor,
+                                                        enemyColor);
+            match.getChessMovesRecord().add(chessMove);
+            match.setFinished(finished);
+
+            matchRepository.save(match);
+
+            matchWebsocketRoom.makeMoveOkResponse(chessMove);
+
+
+            if (finished) {
+                matchWebsocketRoom.finishMatchWebsockets(match.getResult());
+                UpdateUsersRatingsRequest updateUsersRatingsRequest = mapper.mapToUpdateUsersRatingsRequest(match);
+                Utils.sendUpdateUsersRatingsRequest(updateUsersRatingsRequest);
+            }
+
+        } finally {
+            matchWebsocketRoom.reentrantLock.unlock();
         }
 
-        String username = Utils.getCurrentUsername();
-        UsersInMatch usersInMatch = match.getUsersInMatch();
-
-        if (!username.equals(usersInMatch.getCurrentTurnUsername())) {
-            return new MakeMoveBadResponse("It's not your turn");
-        }
-
-        ChessColor userColor = usersInMatch.getCurrentTurnUserColor();
-        ChessPiece[][] boardState = match.getBoardState();
-        ChessCoords startCoords = chessMove.getStartCoords();
-
-        if (ChessGameUtils.validateChessMove(chessMove, startCoords, userColor, boardState)) {
-            return new MakeMoveBadResponse("Bad move");
-        }
-
-        ChessPiece startPiece = boardState[startCoords.getNumberCoord()][startCoords.getLetterCoord()];
-
-        if (!startPiece.makeMoveIfPossible(match, chessMove)) {
-            return new MakeMoveBadResponse("Bad move");
-        }
-
-        boolean finished = checkIfMatchIsFinished(match, chessMove);
-
-
-        MatchRecord matchRecord = matchRecordRepository.findById(matchId).orElseThrow(()
-                -> new RuntimeException("match_record DB doesn't contain record with match_id = " + matchId));
-
-        matchRecord.getChessMovesRecord().add(chessMove);
-        match.setFinished(finished);
-
-        matchRepository.save(match);
-        matchRecordRepository.save(matchRecord);
-
-        sendChessMove(matchId, chessMove, finished);
-        return new MakeMoveOKResponse();
     }
 
+    private void checkIfChessPositionIsChangedIrreversibly(Match match, ChessMove chessMove) {
+        if (chessMove.getEndPiece() != null || chessMove.getStartPiece().getName().equals("pawn")
+                || chessMove.isStartPieceFirstMove() || chessMove.getPreviousEnPassantCoords() != null) {
+            match.setChessPositionsRecord(new ChessPositionsRecord(chessMove.getMoveNumber(), new HashMap<>()));
+        }
+    }
 
-    private boolean checkIfMatchIsFinished(Match match, ChessMove chessMove) {
-        UsersInMatch usersInMatch = match.getUsersInMatch();
-        ChessColor enemyColor = ChessColor.getInvertedColor(usersInMatch.getCurrentTurnUserColor());
+    private void updateTimeLeftAndLastMoveTime(Match match, ChessMove chessMove, int currentMoveNumber,
+                                               ChessColor currentTurnUserColor, ChessColor enemyColor) {
+        TimeLefts timelefts = ChessGameUtils.calculateTimeLefts(match, currentMoveNumber, currentTurnUserColor,
+                enemyColor);
+        match.setLastMoveTimeMS(timelefts.getThisMoveTime());
+        chessMove.setTimeLeftByUserColor(currentTurnUserColor, timelefts.getNewTimeLeft());
+        chessMove.setTimeLeftByUserColor(enemyColor, timelefts.getEnemyTimeLeft());
+    }
+
+    private boolean checkIfMatchIsFinished(Match match, ChessMove chessMove, int currentMoveNumber,
+                                           ChessColor currentTurnUserColor, ChessColor enemyColor) {
         ChessPiece[][] boardState = match.getBoardState();
 
         ChessCoords enemyKingCoords = ChessPiece.findKingCoords(boardState, enemyColor);
@@ -103,32 +229,95 @@ public class MatchService {
 
         boolean enemyHavePossibleMoves = ChessPiece.doesEnemyHavePossibleMoves(match, enemyKingCoords, enemyColor);
 
-        if (enemyHavePossibleMoves) {
+        if (!enemyHavePossibleMoves) {
+            ChessMatchResult matchResult = new ChessMatchResult();
+            matchResult.setWhiteTimeLeftMS(chessMove.getWhiteTimeLeftMS());
+            matchResult.setBlackTimeLeftMS(chessMove.getBlackTimeLeftMS());
+
             if (check) {
-                chessMove.setChessMoveResult(ChessMoveResult.CHECK);
+                matchResult.setWinnerColor(currentTurnUserColor);
+                matchResult.setMessage("Мат");
+                chessMove.setResult(ChessMoveResult.MATE);
+            } else {
+                matchResult.setDraw(true);
+                matchResult.setMessage("Пат");
             }
-            usersInMatch.setCurrentTurnUserColor(enemyColor);
-            return false;
-        } else {
-            if (check) {
-                chessMove.setChessMoveResult(ChessMoveResult.MATE);
-            }
+
+            match.setResult(matchResult);
             match.setFinished(true);
             return true;
         }
+
+        ChessPositionCheckResultEnum positionCheckResult = match.getChessPositionsRecord()
+                                                            .handleNewChessPosition(currentMoveNumber, boardState);
+        if (positionCheckResult != ChessPositionCheckResultEnum.OK) {
+            ChessMatchResult matchResult = new ChessMatchResult();
+            matchResult.setWhiteTimeLeftMS(chessMove.getWhiteTimeLeftMS());
+            matchResult.setBlackTimeLeftMS(chessMove.getBlackTimeLeftMS());
+            matchResult.setDraw(true);
+
+            String message;
+
+            switch (positionCheckResult) {
+                case THREEFOLD_REPETITION:
+                    message = "Трёхкратное повторение позиции";
+                    break;
+                case FIFTY_MOVE_NOT_CHANGE:
+                    message = "50 ходов без необратимых изменений в положении фигур";
+                    break;
+                default:
+                    throw new RuntimeException("Incorrect ChessPositionCheckResultEnum object");
+            }
+
+            matchResult.setMessage(message);
+            match.setResult(matchResult);
+            match.setFinished(true);
+            return true;
+        }
+
+        if (check) {
+            chessMove.setResult(ChessMoveResult.CHECK);
+        }
+
+        return false;
     }
 
-    private void sendChessMove(long matchId, ChessMove chessMove, boolean finished) {
-        threadPool.execute(() -> {
-            ChessMoveSseEmitters matchSubscribers = emitters.get(matchId);
-            if (matchSubscribers != null) {
-                matchSubscribers.sendToAllSubscribers(chessMove);
-                if (finished) {
-                    matchSubscribers.completeAll();
-                    emitters.remove(matchId);
-                }
+
+    public void handleUserMatchRequest(long matchId, ChessMatchWebsocketRequestEnum requestType) {
+        ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
+
+        if (matchWebsocketRoom == null) {
+            throw new ChessMatchWebsocketCloseConnectionException("No active match with id " + matchId + " was found");
+        }
+
+        matchWebsocketRoom.reentrantLock.lock();
+
+        try {
+            matchWebsocketRoom.checkFinished();
+            String username = Utils.getCurrentUsername();
+            matchWebsocketRoom.checkSubscribed(username);
+            switch (requestType) {
+                case INFO:
+                    matchWebsocketRoom.sendInfo(username);
+                    break;
+                case DRAW:
+                    matchWebsocketRoom.makeDrawOffer(username);
+                    break;
+                case ACCEPT_DRAW:
+                    matchWebsocketRoom.acceptDrawOffer(username);
+                    break;
+                case REJECT_DRAW:
+                    matchWebsocketRoom.rejectDrawOffer(username);
+                    break;
+                case SURRENDER:
+                    matchWebsocketRoom.surrender(username);
+                    break;
+                default:
+                    throw new RuntimeException("Incorrect request type: " + requestType);
             }
-        });
+        } finally {
+            matchWebsocketRoom.reentrantLock.unlock();
+        }
     }
 
 }

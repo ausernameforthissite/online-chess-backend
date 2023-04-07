@@ -4,16 +4,16 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import tsar.alex.model.Match;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface MatchRepository extends MongoRepository<Match, Long> {
 
-    @Query(value = "{ 'Finished' : false, 'usersInMatch.usernames': ?0 }", exists = true)
-    boolean isUserInMatch(String username);
+    @Query(value = "{ 'finished' : false, '$or':[{'UsersInMatch.whiteUsername': ?0}, {'UsersInMatch.whiteUsername': ?0}] }")
+    List<Match> findActiveMatchesByUsername(String username);
 
-    @Query(value = "{ 'Finished' : false }", count = true)
-    int testMethod(String username);
+//    @Override
+//    Optional<Match> findById(long matchId);
 
-    @Override
-    Optional<Match> findById(Long matchId);
+
+    List<Match> getMatchesByFinishedFalse();
 }
