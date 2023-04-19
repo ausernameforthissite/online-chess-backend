@@ -6,7 +6,7 @@
       <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed" />
       <schema-mapping>
         <introspection-scope>
-          <node kind="schema" negative="1" />
+          <node kind="schema" qname="match_db" />
         </introspection-scope>
       </schema-mapping>
     </data-source>
@@ -18,8 +18,8 @@
       <user-name>postgres</user-name>
       <schema-mapping>
         <introspection-scope>
-          <node kind="database" qname="@">
-            <node kind="schema" qname="@" />
+          <node kind="database" qname="auth_db">
+            <node kind="schema" qname="public" />
           </node>
         </introspection-scope>
       </schema-mapping>
@@ -32,8 +32,8 @@
       <user-name>postgres</user-name>
       <schema-mapping>
         <introspection-scope>
-          <node kind="database" qname="@">
-            <node kind="schema" qname="@" />
+          <node kind="database" qname="matcher_db">
+            <node kind="schema" qname="public" />
           </node>
         </introspection-scope>
       </schema-mapping>

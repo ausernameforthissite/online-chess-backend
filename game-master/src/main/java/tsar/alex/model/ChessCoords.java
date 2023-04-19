@@ -1,18 +1,22 @@
 package tsar.alex.model;
 
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class ChessCoords {
+    @Size(min = 0, max = 7, message = "numberCoord must be between 0 and 7")
     private int numberCoord;
+
+    @Size(min = 0, max = 7, message = "letterCoord must be between 0 and 7")
     private int letterCoord;
 
 

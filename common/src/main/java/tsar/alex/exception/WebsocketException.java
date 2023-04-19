@@ -1,11 +1,21 @@
 package tsar.alex.exception;
 
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class WebsocketException extends RuntimeException {
-    public WebsocketException() {
+    private WebsocketErrorCodeEnum code;
+
+    public WebsocketException(String message, WebsocketErrorCodeEnum code) {
+        super(message);
+        this.code = code;
     }
 
-    public WebsocketException(String message) {
-        super(message);
+    public WebsocketException(Throwable cause, WebsocketErrorCodeEnum code) {
+        super(cause);
+        this.code = code;
     }
 }

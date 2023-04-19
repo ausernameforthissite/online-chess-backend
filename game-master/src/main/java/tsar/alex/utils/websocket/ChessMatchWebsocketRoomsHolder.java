@@ -34,23 +34,25 @@ public class ChessMatchWebsocketRoomsHolder {
 
             long delay;
             int currentMoveNumber = match.getCurrentMoveNumber();
+            int lastMoveNumber = currentMoveNumber - 1;
             ChessColor currentTurnUserColor = ChessGameUtils.getUserColorByMoveNumber(currentMoveNumber);
+
+            UsersInMatchWithOnlineStatusesAndTimings usersInMatch = new UsersInMatchWithOnlineStatusesAndTimings(match.getUsersInMatch());
 
             if (currentMoveNumber < 2) {
                 delay = ChessGameConstants.FIRST_MOVE_TIME_LEFT_MS;
             } else {
-                ChessMove lastMove = chessMoves.get(currentMoveNumber - 1);
+                ChessMove lastMove = chessMoves.get(lastMoveNumber);
+                usersInMatch.setTimeLefts(lastMove);
                 delay = lastMove.getTimeLeftByUserColor(currentTurnUserColor)
                         - (System.currentTimeMillis() - match.getLastMoveTimeMS());
             }
 
-            ChessMatchWebsocketRoom websocketRoom = addMatchWebsocketRoom(match.getId(), match.getUsersInMatch());
-
+            ChessMatchWebsocketRoom websocketRoom = addMatchWebsocketRoom(match.getId(), usersInMatch);
             websocketRoom.reentrantLock.lock();
 
             try {
-                websocketRoom.checkFinished();
-                websocketRoom.setLastMoveNumber(currentMoveNumber - 1);
+                websocketRoom.setLastMoveNumber(lastMoveNumber);
                 websocketRoom.setTimeoutFinisher(currentTurnUserColor, TimeoutTypeEnum.TIME_IS_UP, delay);
 
                 if (currentMoveNumber >= 2) {
@@ -65,17 +67,21 @@ public class ChessMatchWebsocketRoomsHolder {
         }
     }
 
-    public ChessMatchWebsocketRoom addMatchWebsocketRoom(long matchId, UsersInMatch usersInMatch) {
+    public ChessMatchWebsocketRoom addMatchWebsocketRoom(long matchId, UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings) {
         if (matchWebsocketRooms.containsKey(matchId)) {
             throw new RuntimeException("Room with match id = " + matchId + " already exists!");
         } else {
-            ChessMatchWebsocketRoom websocketRoom = new ChessMatchWebsocketRoom(this,
-                                                    matchId, new UsersInMatchWithOnlineStatus(usersInMatch), objectMapper,
-                                                    messagingTemplate, scheduledExecutorService, matchWebsocketService);
+            ChessMatchWebsocketRoom websocketRoom = new ChessMatchWebsocketRoom(matchId,
+                    usersInMatchWithOnlineStatusesAndTimings,this, objectMapper,
+                    messagingTemplate, scheduledExecutorService, matchWebsocketService);
 
             matchWebsocketRooms.put(matchId, websocketRoom);
             return websocketRoom;
         }
+    }
+
+    public ChessMatchWebsocketRoom addMatchWebsocketRoom(long matchId, UsersInMatch usersInMatch) {
+        return addMatchWebsocketRoom(matchId, new UsersInMatchWithOnlineStatusesAndTimings(usersInMatch));
     }
 
     public ChessMatchWebsocketRoom getMatchWebsocketRoom(long matchId) {
@@ -85,5 +91,7 @@ public class ChessMatchWebsocketRoomsHolder {
     public ChessMatchWebsocketRoom removeMatchWebsocketRoom(long matchId) {
         return matchWebsocketRooms.remove(matchId);
     }
+
+
 
 }

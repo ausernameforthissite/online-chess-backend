@@ -1,12 +1,10 @@
 package tsar.alex.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import tsar.alex.dto.response.GeneralBadResponse;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class MatchStateBadResponse implements MatchStateResponse {
-    private String message;
+
+public class MatchStateBadResponse extends GeneralBadResponse implements MatchStateResponse {
+    public MatchStateBadResponse(String message) {
+        super(message);
+    }
 }

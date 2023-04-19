@@ -18,6 +18,9 @@ import java.util.UUID;
 @Transactional
 public class RefreshTokenService {
 
+    private static final String NOT_FOUND = "Refresh token not exist or expired";
+    private static final String EXPIRED = "Refresh token is expired";
+
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${refresh-token.expiration-time.seconds}")
@@ -35,11 +38,11 @@ public class RefreshTokenService {
 
     public User validateRefreshTokenAndRetrieveUser(RefreshToken refreshToken) throws RefreshTokenException {
         RefreshToken persistentRefreshToken = refreshTokenRepository.findByToken(refreshToken.getToken())
-                .orElseThrow(() -> new RefreshTokenException("Refresh token not exist or expired"));
+                .orElseThrow(() -> new RefreshTokenException(NOT_FOUND));
 
         if (persistentRefreshToken.getExpiresAt().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new RefreshTokenException("Refresh token is expired");
+            throw new RefreshTokenException(EXPIRED);
         }
 
         refreshTokenRepository.delete(persistentRefreshToken);

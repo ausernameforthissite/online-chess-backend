@@ -1,9 +1,9 @@
 package tsar.alex.mapper;
 
 import org.mapstruct.Mapper;
-import tsar.alex.dto.StartMatchOkResponse;
-import tsar.alex.dto.StartMatchRequest;
-import tsar.alex.dto.UsersRatingsDataForMatchOkResponse;
+import tsar.alex.dto.response.StartMatchOkResponse;
+import tsar.alex.dto.request.StartMatchRequest;
+import tsar.alex.dto.response.UsersRatingsDataForMatchOkResponse;
 import tsar.alex.model.ChessMatchUserRatingsRecord;
 import tsar.alex.model.Pair;
 import tsar.alex.model.CurrentUserRating;

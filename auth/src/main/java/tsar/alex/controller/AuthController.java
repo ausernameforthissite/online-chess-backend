@@ -5,54 +5,80 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import tsar.alex.dto.*;
+import tsar.alex.dto.request.LoginRegisterRequest;
+import tsar.alex.dto.response.*;
 import tsar.alex.mapper.AuthMapper;
 import tsar.alex.model.User;
 import tsar.alex.service.AuthService;
 import tsar.alex.service.RefreshTokenService;
+import tsar.alex.utils.Utils;
+
+import javax.validation.Valid;
 
 
 @RestController
 @RequestMapping("/api/auth")
 @AllArgsConstructor
 public class AuthController {
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh-token";
+    private static final String REFRESH_TOKEN_BLANK = "refresh-token cookie is blank";
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
     private final AuthMapper authMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody AuthRequest authRequest) {
-        User user = authMapper.mapToUser(authRequest);
-        authService.register(user);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<RegisterResponse> register(@RequestBody @Valid LoginRegisterRequest loginRegisterRequest,
+                                                     BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(new RegisterBadResponse(
+                    Utils.getBindingResultErrorsAsString(bindingResult)), HttpStatus.BAD_REQUEST);
+        }
+
+        User user = authMapper.mapToUser(loginRegisterRequest);
+        RegisterResponse response = authService.register(user);
+
+        HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(response, httpStatus);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AccessTokenDto> login(@RequestBody AuthRequest authRequest) {
-        User user = authMapper.mapToUser(authRequest);
-        AuthResponse authResponse = authService.login(user);
-        return generateRefreshTokenResponse(authResponse);
+    public ResponseEntity<LoginRefreshResponse> login(@RequestBody @Valid LoginRegisterRequest loginRegisterRequest,
+                                                        BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(new LoginRefreshBadResponse(
+                    Utils.getBindingResultErrorsAsString(bindingResult)), HttpStatus.BAD_REQUEST);
+        }
+
+        User user = authMapper.mapToUser(loginRegisterRequest);
+        LoginRefreshDto loginRefreshDTO = authService.login(user);
+        return generateRefreshTokenResponse(loginRefreshDTO);
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<AccessTokenDto> login(@CookieValue(name = "refresh-token") String token) {
-        AuthResponse authResponse = authService.refreshToken(authMapper.mapToRefreshToken(token));
+    public ResponseEntity<LoginRefreshResponse> refresh(@CookieValue(name = REFRESH_TOKEN_COOKIE_NAME) String token) {
+        if (token == null || token.isBlank()) {
+            return new ResponseEntity<>(new LoginRefreshBadResponse(REFRESH_TOKEN_BLANK), HttpStatus.BAD_REQUEST);
+        }
 
-        return generateRefreshTokenResponse(authResponse);
+        LoginRefreshDto loginRefreshDTO = authService.refreshToken(authMapper.mapToRefreshToken(token));
+        return generateRefreshTokenResponse(loginRefreshDTO);
     }
 
-    public ResponseEntity<AccessTokenDto> generateRefreshTokenResponse(AuthResponse authResponse) {
+    public ResponseEntity<LoginRefreshResponse> generateRefreshTokenResponse(LoginRefreshDto loginRefreshDto) {
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.SET_COOKIE, generateRefreshTokenCookieAsString(authResponse.getRefreshTokenDto()))
-                .body(authResponse.getAccessTokenDto());
+                .header(HttpHeaders.SET_COOKIE, generateRefreshTokenCookieAsString(
+                                                loginRefreshDto.getRefreshTokenDto()))
+                .body(new LoginRefreshOkResponse(loginRefreshDto.getAccessToken()));
     }
 
     public String generateRefreshTokenCookieAsString(RefreshTokenDto refreshTokenDto) {
         return   ResponseCookie
-                .from("refresh-token", refreshTokenDto.getToken())
+                .from(REFRESH_TOKEN_COOKIE_NAME, refreshTokenDto.getToken())
                 .httpOnly(true)
                 .path("/")
                 .maxAge(refreshTokenDto.getMaxAgeSeconds())
@@ -61,9 +87,12 @@ public class AuthController {
 
 
     @DeleteMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(name = "refresh-token") String token) {
-        refreshTokenService.deleteRefreshToken(authMapper.mapToRefreshToken(token));
+    public ResponseEntity<LogoutResponse> logout(@CookieValue(name = REFRESH_TOKEN_COOKIE_NAME) String token) {
+        if (token == null || token.isBlank()) {
+            return new ResponseEntity<>(new LogoutBadResponse(REFRESH_TOKEN_BLANK), HttpStatus.BAD_REQUEST);
+        }
 
+        refreshTokenService.deleteRefreshToken(authMapper.mapToRefreshToken(token));
         RefreshTokenDto refreshTokenDto = new RefreshTokenDto("", 0L);
 
         return ResponseEntity

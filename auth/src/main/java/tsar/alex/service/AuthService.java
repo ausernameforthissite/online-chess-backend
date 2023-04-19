@@ -1,5 +1,6 @@
 package tsar.alex.service;
 
+
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,16 +12,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import tsar.alex.dto.AccessTokenDto;
-import tsar.alex.dto.AuthResponse;
-import tsar.alex.dto.InitializeUserRatingRequest;
-import tsar.alex.dto.RefreshTokenDto;
+import tsar.alex.dto.*;
+import tsar.alex.dto.request.InitializeUserRatingRequest;
+import tsar.alex.dto.response.InitializeUserRatingOkResponse;
+import tsar.alex.dto.response.InitializeUserRatingResponse;
+import tsar.alex.dto.response.RegisterBadResponse;
+import tsar.alex.dto.response.RegisterOkResponse;
+import tsar.alex.dto.response.RegisterResponse;
+import tsar.alex.exception.RestApiResponseException;
 import tsar.alex.mapper.AuthMapper;
-import tsar.alex.model.AccessToken;
 import tsar.alex.model.RefreshToken;
 import tsar.alex.model.User;
 import tsar.alex.repository.UserRepository;
 import tsar.alex.security.JwtProvider;
+import tsar.alex.utils.Endpoints;
 
 import java.time.Instant;
 
@@ -28,6 +33,10 @@ import java.time.Instant;
 @AllArgsConstructor
 @Transactional
 public class AuthService {
+
+    private static final String ALREADY_REGISTERED = "Пользователь с таким именем уже зарегистрирован!";
+    private static final String USER_NOT_FOUND = "There is no registered user with username: %s";
+    private static final String INCORRECT_RESPONSE = "Received response of incorrect type from matcher microservice";
 
     private final RestTemplate restTemplate;
     private final PasswordEncoder passwordEncoder;
@@ -37,40 +46,51 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
-    public void register(User user) {
+
+    public RegisterResponse register(User user) {
+        if (userRepository.existsById(user.getUsername())) {
+            return new RegisterBadResponse(ALREADY_REGISTERED);
+        }
         user.setCreatedAt(Instant.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User persistentUser = userRepository.save(user);
 
-        HttpEntity<InitializeUserRatingRequest> httpRequest = new HttpEntity<>(authMapper.mapToInitializeRatingRequest(persistentUser));
-        HttpEntity<Void> response = restTemplate.postForEntity("http://localhost:8081/api/initialize_user_rating", httpRequest, Void.class);
+        HttpEntity<InitializeUserRatingRequest> httpRequest = new HttpEntity<>(
+                authMapper.mapToInitializeRatingRequest(persistentUser));
+        InitializeUserRatingResponse response = restTemplate.postForObject(Endpoints.INITIALIZE_USER_RATING,
+                httpRequest, InitializeUserRatingResponse.class);
+
+
+        if (response instanceof InitializeUserRatingOkResponse) {
+            return new RegisterOkResponse();
+        } else {
+            throw new RestApiResponseException(INCORRECT_RESPONSE);
+        }
     }
 
-    public AuthResponse login(User user) {
+    public LoginRefreshDto login(User user) {
+        String username = user.getUsername();
+
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        user.getUsername(), user.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         User persistentUser = userRepository.findById(user.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "No user with such username!"));
-        return generateAuthResponse(persistentUser);
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, username)));
+        return generateLoginRefreshResponse(persistentUser);
     }
 
-    public AuthResponse refreshToken(RefreshToken refreshToken) {
-        User user = refreshTokenService.validateRefreshTokenAndRetrieveUser(
-                refreshToken);
-        return generateAuthResponse(user);
+    public LoginRefreshDto refreshToken(RefreshToken refreshToken) {
+        User user = refreshTokenService.validateRefreshTokenAndRetrieveUser(refreshToken);
+        return generateLoginRefreshResponse(user);
     }
 
 
-    public AuthResponse generateAuthResponse(User user) {
-        AccessToken accessToken = jwtProvider.generateToken(user);
-        AccessTokenDto accessTokenDto = authMapper.mapToAccessTokenDto(accessToken);
+    public LoginRefreshDto generateLoginRefreshResponse(User user) {
+        String accessToken = jwtProvider.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
         RefreshTokenDto refreshTokenDto = authMapper.mapToRefreshTokenDto(refreshToken);
 
-        return authMapper.mapToAuthResponse(accessTokenDto, refreshTokenDto);
+        return new LoginRefreshDto(accessToken, refreshTokenDto);
     }
 }

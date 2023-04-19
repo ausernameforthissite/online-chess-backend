@@ -3,7 +3,7 @@ package tsar.alex.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import tsar.alex.dto.MatchStateOkResponse;
-import tsar.alex.dto.UpdateUsersRatingsRequest;
+import tsar.alex.dto.request.UpdateUsersRatingsRequest;
 import tsar.alex.model.*;
 
 
@@ -22,5 +22,4 @@ public interface GameMasterMapper {
     @Mapping(target="draw", source="match.result.draw")
     @Mapping(target="winnerColor", source="match.result.winnerColor")
     UpdateUsersRatingsRequest mapToUpdateUsersRatingsRequest(Match match);
-
 }

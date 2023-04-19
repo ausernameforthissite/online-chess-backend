@@ -1,5 +1,7 @@
 package tsar.alex.config.websoket;
 
+import static tsar.alex.utils.CommonTextConstants.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -14,8 +16,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.stereotype.Component;
-import tsar.alex.exception.ChessMatchWebsocketCloseConnectionException;
-import tsar.alex.exception.ChessMatchWebsocketException;
+import tsar.alex.exception.WebsocketErrorCodeEnum;
+import tsar.alex.exception.WebsocketException;
 import tsar.alex.model.WebsocketSessionWrapper;
 import tsar.alex.utils.WebsocketCommonUtils;
 import tsar.alex.utils.websocket.ChessMatchWebsocketRoom;
@@ -56,11 +58,11 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
                 try {
                     matchId = Long.parseLong(matchIdHeader.get(0));
                 } catch (NumberFormatException e) {
-                    throw new ChessMatchWebsocketCloseConnectionException("Incorrect match id!");
+                    throw new WebsocketException(INCORRECT_MATCH_ID, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
                 }
 
             } else {
-                throw new ChessMatchWebsocketCloseConnectionException("No Match-Id header!");
+                throw new WebsocketException(NO_MATCH_ID_HEADER, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
 
             System.out.println("Match id: " + matchId);
@@ -69,8 +71,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
             ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
             if (matchWebsocketRoom == null) {
-                throw new ChessMatchWebsocketCloseConnectionException("No active match with id " + matchId
-                                                                        + " was found");
+                throw new WebsocketException(String.format(NO_ACTIVE_MATCH, matchId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_NO_ACTIVE_MATCH);
             }
 
             List<String> authorization = accessor.getNativeHeader("X-Authorization");
@@ -83,8 +84,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
                 try {
                     jwt = jwtDecoder.decode(accessToken);
                 } catch (Exception e) {
-                    System.out.println("Wrong jwt-token" + e.getMessage());
-                    throw new ChessMatchWebsocketCloseConnectionException("Unauthorized. Incorrect access token");
+                    throw new WebsocketException(UNAUTHORIZED, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
                 }
             } else {
                 jwt = Jwt.withTokenValue("0").header("typ", "JWT").claim("username",
@@ -103,7 +103,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
             WebsocketSessionWrapper websocketSessionWrapper = websocketSessions.get(sessionId);
 
             if (websocketSessionWrapper == null) {
-                throw new ChessMatchWebsocketException("No active session with id = " + sessionId + " was found");
+                throw new WebsocketException(String.format(NO_ACTIVE_SESSION, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
 
             WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, true);
@@ -112,8 +112,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
             ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
             if (matchWebsocketRoom == null) {
-                throw new ChessMatchWebsocketCloseConnectionException("No active match with id " + matchId
-                                                                        + " was found");
+                throw new WebsocketException(String.format(NO_ACTIVE_MATCH, matchId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_NO_ACTIVE_MATCH);
             }
 
             matchWebsocketRoom.reentrantLock.lock();
@@ -130,7 +129,10 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
 
         if (StompCommand.UNSUBSCRIBE.equals(command)) {
             System.out.println("Unsubscribe");
-            throw new ChessMatchWebsocketCloseConnectionException("You can't unsubscribe, my dear!");
+            String username = ((AbstractAuthenticationToken) accessor.getUser()).getName();
+            String sessionId = accessor.getSessionId();
+
+            throw new WebsocketException(String.format(CANNOT_UNSUBSCRIBE, username, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
 
         if (StompCommand.DISCONNECT.equals(command)) {

@@ -1,14 +1,19 @@
 package tsar.alex.utils.websocket;
 
+import static tsar.alex.utils.CommonTextConstants.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.socket.WebSocketSession;
 import tsar.alex.dto.websocket.response.*;
-import tsar.alex.exception.ChessMatchWebsocketCloseConnectionException;
+import tsar.alex.dto.websocket.response.ChessMatchWebsocketResponseEnum.ChessMatchWebsocketBadResponseEnum;
+import tsar.alex.exception.WebsocketErrorCodeEnum;
+import tsar.alex.exception.WebsocketException;
 import tsar.alex.model.*;
 import tsar.alex.service.MatchWebsocketService;
 import tsar.alex.utils.*;
@@ -22,24 +27,20 @@ public class ChessMatchWebsocketRoom {
 
     public final ReentrantLock reentrantLock = new ReentrantLock();
 
-    private final ChessMatchWebsocketRoomsHolder chessMatchWebsocketRoomsHolder;
-
+    private final Map<String, WebsocketSessionWrapper> usersSubscribedToMatch = new ConcurrentHashMap<>(2);
+    private final ScheduledFuture<?>[] timeoutFinishers = new ScheduledFuture[4];
     private final long matchId;
-    private final UsersInMatchWithOnlineStatus usersInMatchWithOnlineStatus;
+    private final UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings;
     private boolean finished;
     private int lastMoveNumber = -1;
     private int drawOfferMoveNumber = -1;
     private ChessColor drawOfferUserColor;
 
-    private final Map<String, WebsocketSessionWrapper> usersSubscribedToMatch = new ConcurrentHashMap<>(2);
-
+    private final ChessMatchWebsocketRoomsHolder chessMatchWebsocketRoomsHolder;
     private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
     private final ScheduledExecutorService scheduledExecutorService;
-
     private final MatchWebsocketService matchWebsocketService;
-
-    private final ScheduledFuture<?>[] timeoutFinishers = new ScheduledFuture[4];
 
 
     public void setLastMoveNumber(int lastMoveNumber) {
@@ -50,12 +51,11 @@ public class ChessMatchWebsocketRoom {
         WebsocketSessionWrapper oldWebsocketSessionWrapper = usersSubscribedToMatch.get(username);
 
         if (oldWebsocketSessionWrapper != null) {
-            throw new ChessMatchWebsocketCloseConnectionException("You are already subscribed for match" +
-                    " (maybe from another window or device)");
+            throw new WebsocketException(ALREADY_SUBSCRIBED, WebsocketErrorCodeEnum.CLOSE_CONNECTION_ALREADY_SUBSCRIBED);
         }
         usersSubscribedToMatch.put(username, websocketSessionWrapper);
 
-        ChessColor userColor = usersInMatchWithOnlineStatus.getColorByUsername(username);
+        ChessColor userColor = usersInMatchWithOnlineStatusesAndTimings.getColorByUsername(username);
 
         if (userColor == null) {
             return;
@@ -65,7 +65,7 @@ public class ChessMatchWebsocketRoom {
         if (oldTimeoutFinisher != null) {
             oldTimeoutFinisher.cancel(true);
         }
-        usersInMatchWithOnlineStatus.setOnlineStatusByUserColor(userColor, true);
+        usersInMatchWithOnlineStatusesAndTimings.setOnlineStatusByUserColor(userColor, true);
 
         ChessMatchUserSubscribedResponse userSubscribedResponse = new ChessMatchUserSubscribedResponse(userColor);
         String responseAsJSONString = mapResponseToJSONString(userSubscribedResponse);
@@ -89,8 +89,8 @@ public class ChessMatchWebsocketRoom {
     }
 
     private CurrentUsersOnlineStatusesAndTimings getCurrentUsersOnlineStatusesAndTimings() {
-        boolean whiteUserOnline = usersInMatchWithOnlineStatus.isWhiteUserOnline();
-        boolean blackUserOnline = usersInMatchWithOnlineStatus.isBlackUserOnline();
+        boolean whiteUserOnline = usersInMatchWithOnlineStatusesAndTimings.isWhiteUserOnline();
+        boolean blackUserOnline = usersInMatchWithOnlineStatusesAndTimings.isBlackUserOnline();
 
         long whiteTimeLeftMS;
         long blackTimeLeftMS;
@@ -136,7 +136,7 @@ public class ChessMatchWebsocketRoom {
 
     public void removeDisconnectedUser(String username, String sessionId) {
 
-        ChessColor userColor = usersInMatchWithOnlineStatus.getColorByUsername(username);
+        ChessColor userColor = usersInMatchWithOnlineStatusesAndTimings.getColorByUsername(username);
 
         if (userColor == null) {
             usersSubscribedToMatch.remove(username);
@@ -150,7 +150,7 @@ public class ChessMatchWebsocketRoom {
 
         usersSubscribedToMatch.remove(username);
 
-        usersInMatchWithOnlineStatus.setOnlineStatusByUserColor(userColor, false);
+        usersInMatchWithOnlineStatusesAndTimings.setOnlineStatusByUserColor(userColor, false);
 
         if (lastMoveNumber >= 1) {
             setTimeoutFinisher(userColor, TimeoutTypeEnum.DISCONNECTED, ChessGameConstants.LEFT_GAME_TIMEOUT_MS);
@@ -171,7 +171,11 @@ public class ChessMatchWebsocketRoom {
             oldTimeoutFinisher.cancel(true);
         }
 
-        if (lastMoveNumber == 1 && !usersInMatchWithOnlineStatus.isWhiteUserOnline()) {
+        if (lastMoveNumber >= 1) {
+            usersInMatchWithOnlineStatusesAndTimings.setTimeLefts(chessMove);
+        }
+
+        if (lastMoveNumber == 1 && !usersInMatchWithOnlineStatusesAndTimings.isWhiteUserOnline()) {
             setTimeoutFinisher(ChessColor.WHITE, TimeoutTypeEnum.DISCONNECTED, ChessGameConstants.LEFT_GAME_TIMEOUT_MS);
         }
 
@@ -187,37 +191,34 @@ public class ChessMatchWebsocketRoom {
         }
     }
 
-    public void sendBadResponse(ChessMatchWebsocketResponseEnum badResponseType, String username, String errorMessage) {
-        badResponseType.checkBadResponseType();
-
-        WebsocketSessionWrapper websocketSessionWrapper = usersSubscribedToMatch.get(username);
+    public void sendBadResponse(@NotNull ChessMatchWebsocketBadResponseEnum badResponseType, String username, String errorMessage) {
+        WebsocketSessionWrapper websocketSessionWrapper = usersSubscribedToMatch.get(username); // Can it be null? If it can, it can be NPE two lines below
         String responseAsJSONString = mapResponseToJSONString(new ChessMatchBadResponse(errorMessage, badResponseType));
         sendMessageToWebsocketSession(responseAsJSONString, websocketSessionWrapper.getSession());
     }
 
     public void makeDrawOffer(String username) {
-        ChessColor userColor = usersInMatchWithOnlineStatus.getColorByUsername(username);
-
+        ChessColor userColor = usersInMatchWithOnlineStatusesAndTimings.getColorByUsername(username);
         if (userColor == null) {
-            sendBadResponse(ChessMatchWebsocketResponseEnum.DRAW_BAD, username,
+            sendBadResponse(ChessMatchWebsocketBadResponseEnum.DRAW_BAD, username,
                         "Only players can offer draw!");
             return;
         }
 
         if (lastMoveNumber < 1) {
-            sendBadResponse(ChessMatchWebsocketResponseEnum.DRAW_BAD, username,
+            sendBadResponse(ChessMatchWebsocketBadResponseEnum.DRAW_BAD, username,
                     "You can't offer draw before the second turn!");
             return;
         }
 
         if (lastMoveNumber < drawOfferMoveNumber) {
-            sendBadResponse(ChessMatchWebsocketResponseEnum.DRAW_BAD, username,
+            sendBadResponse(ChessMatchWebsocketBadResponseEnum.DRAW_BAD, username,
                     "Draw can't be offered twice on the same move.");
             return;
         }
 
         if (lastMoveNumber == drawOfferMoveNumber && userColor == drawOfferUserColor) {
-            sendBadResponse(ChessMatchWebsocketResponseEnum.DRAW_BAD, username,
+            sendBadResponse(ChessMatchWebsocketBadResponseEnum.DRAW_BAD, username,
                     "You need to wait one more turn before make another draw offer.");
             return;
         }
@@ -236,7 +237,7 @@ public class ChessMatchWebsocketRoom {
     }
 
     public void rejectDrawOffer(String username) {
-        checkDrawActionPossibility(username, ChessMatchWebsocketResponseEnum.REJECT_DRAW_BAD);
+        checkDrawActionPossibility(username, ChessMatchWebsocketBadResponseEnum.REJECT_DRAW_BAD);
 
         drawOfferMoveNumber = -1;
         ChessMatchRejectDrawResponse rejectDrawResponse = new ChessMatchRejectDrawResponse();
@@ -250,7 +251,7 @@ public class ChessMatchWebsocketRoom {
     }
 
     public void acceptDrawOffer(String username) {
-        checkDrawActionPossibility(username, ChessMatchWebsocketResponseEnum.ACCEPT_DRAW_BAD);
+        checkDrawActionPossibility(username, ChessMatchWebsocketBadResponseEnum.ACCEPT_DRAW_BAD);
 
         ChessMatchResult matchResult = new ChessMatchResult();
         matchResult.setDraw(true);
@@ -258,13 +259,13 @@ public class ChessMatchWebsocketRoom {
         finishMatchWebsockets(matchWebsocketService.finishMatch(matchId, matchResult));
     }
 
-    private void checkDrawActionPossibility(String username, ChessMatchWebsocketResponseEnum drawBadResponseType) {
+    private void checkDrawActionPossibility(String username, ChessMatchWebsocketBadResponseEnum drawBadResponseType) {
         if (drawOfferUserColor == null || lastMoveNumber > drawOfferMoveNumber) {
             sendBadResponse(drawBadResponseType, username, "Draw offer doesn't exist or is expired!");
             return;
         }
 
-        ChessColor userColor = usersInMatchWithOnlineStatus.getColorByUsername(username);
+        ChessColor userColor = usersInMatchWithOnlineStatusesAndTimings.getColorByUsername(username);
         ChessColor userToWhomDrawWasOffered = ChessColor.getInvertedColor(drawOfferUserColor);
 
         if (userColor != userToWhomDrawWasOffered) {
@@ -274,10 +275,10 @@ public class ChessMatchWebsocketRoom {
     }
 
     public void surrender(String username) {
-        ChessColor userColor = usersInMatchWithOnlineStatus.getColorByUsername(username);
+        ChessColor userColor = usersInMatchWithOnlineStatusesAndTimings.getColorByUsername(username);
 
         if (userColor == null) {
-            sendBadResponse(ChessMatchWebsocketResponseEnum.SURRENDER_BAD, username,
+            sendBadResponse(ChessMatchWebsocketBadResponseEnum.SURRENDER_BAD, username,
                     "Only players can surrender!");
         }
 
@@ -332,7 +333,16 @@ public class ChessMatchWebsocketRoom {
 
     private void sendMessageToWebsocketSession(String responseAsJSONString, WebSocketSession websocketSession) {
         String sessionId = websocketSession.getId();
-        System.out.println("Sending websocket response to session id " + sessionId);
+        String shortMessage;
+
+        if (responseAsJSONString.length() < 10) {
+            shortMessage = responseAsJSONString;
+        } else if (responseAsJSONString.length() < 25) {
+            shortMessage = responseAsJSONString.substring(9);
+        } else {
+            shortMessage = responseAsJSONString.substring(9, 25);
+        }
+        System.out.println("Sending websocket response " + shortMessage + " to session id " + sessionId);
 
         MessageHeaders headers = WebsocketCommonUtils.prepareMessageHeaders(sessionId);
 
@@ -341,7 +351,6 @@ public class ChessMatchWebsocketRoom {
                                                                 responseAsJSONString, headers);
         }
     }
-
 
     public ScheduledFuture<?> getTimeoutFinisher(ChessColor userColor, TimeoutTypeEnum timeoutType) {
         return timeoutFinishers[getTimeoutFinisherIndexByColorAndType(userColor, timeoutType)];
@@ -382,6 +391,7 @@ public class ChessMatchWebsocketRoom {
 
     private long getTimeLeftByColorAndType(ChessColor userColor, TimeoutTypeEnum timeoutType) {
         ScheduledFuture<?> timeoutFinisher = getTimeoutFinisher(userColor, timeoutType);
+
         if (timeoutFinisher != null && !timeoutFinisher.isDone()) {
             return timeoutFinisher.getDelay(TimeUnit.MILLISECONDS);
         } else {
@@ -390,7 +400,7 @@ public class ChessMatchWebsocketRoom {
                     if (lastMoveNumber < 1) {
                         return ChessGameConstants.FIRST_MOVE_TIME_LEFT_MS;
                     } else {
-                        return ChessGameConstants.BLITZ_INITIAL_TIME_LEFT_MS;
+                        return usersInMatchWithOnlineStatusesAndTimings.getTimeLeftByUserColor(userColor);
                     }
                 case DISCONNECTED:
                     return -1;
@@ -402,14 +412,13 @@ public class ChessMatchWebsocketRoom {
 
     public void checkSubscribed(String username) {
         if (usersSubscribedToMatch.get(username) == null) {
-            throw new ChessMatchWebsocketCloseConnectionException("You are not subscribed to match with id = "
-                                                                    + matchId);
+            throw new WebsocketException(String.format(NOT_SUBSCRIBED, matchId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
     }
 
     public void checkFinished() {
         if (finished) {
-            throw new ChessMatchWebsocketCloseConnectionException("The match is already finished!");
+            throw new WebsocketException(MATCH_FINISHED, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
     }
 

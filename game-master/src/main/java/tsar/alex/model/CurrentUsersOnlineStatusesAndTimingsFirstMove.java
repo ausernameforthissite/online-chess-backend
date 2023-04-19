@@ -17,7 +17,6 @@ public class CurrentUsersOnlineStatusesAndTimingsFirstMove extends CurrentUsersO
         super(whiteUserOnline, whiteTimeLeftMS, whiteReconnectTimeLeftMS, blackUserOnline,
                 blackTimeLeftMS, blackReconnectTimeLeftMS);
         this.userFirstMoveTimeLeftMS = userFirstMoveTimeLeftMS;
-
     }
 
 }

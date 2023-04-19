@@ -1,17 +1,28 @@
 package tsar.alex.service;
 
+import static tsar.alex.utils.CommonTextConstants.*;
+
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tsar.alex.dto.*;
+import tsar.alex.dto.request.UpdateUsersRatingsRequest;
+import tsar.alex.dto.response.StartMatchBadResponse;
+import tsar.alex.dto.response.StartMatchOkResponse;
+import tsar.alex.dto.response.StartMatchResponse;
 import tsar.alex.dto.websocket.request.ChessMatchWebsocketRequestEnum;
-import tsar.alex.dto.websocket.response.ChessMatchWebsocketResponseEnum;
-import tsar.alex.exception.ChessMatchWebsocketCloseConnectionException;
+import tsar.alex.dto.websocket.response.ChessMatchWebsocketResponseEnum.ChessMatchWebsocketBadResponseEnum;
+import tsar.alex.exception.WebsocketErrorCodeEnum;
+import tsar.alex.exception.WebsocketException;
 import tsar.alex.mapper.GameMasterMapper;
 import tsar.alex.model.*;
 import tsar.alex.repository.MatchRepository;
 import tsar.alex.utils.ChessFactory;
 import tsar.alex.utils.ChessGameConstants;
 import tsar.alex.utils.ChessGameUtils;
+import tsar.alex.utils.GameMasterUtils;
 import tsar.alex.utils.Utils;
 import tsar.alex.utils.websocket.ChessMatchWebsocketRoom;
 import tsar.alex.utils.websocket.ChessMatchWebsocketRoomsHolder;
@@ -28,6 +39,8 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class MatchService {
+
+    private final Validator validator;
 
     private final GameMasterMapper mapper;
     private final ThreadLocalRandom threadLocalRandom;
@@ -117,7 +130,7 @@ public class MatchService {
         Optional<Match> matchOptional = matchRepository.findById(matchId);
 
         if (matchOptional.isEmpty()) {
-            return new MatchStateBadResponse("Match with id = " + matchId + " was not found");
+            return new MatchStateBadResponse(String.format(NO_MATCH, matchId));
         }
 
         Match match = matchOptional.get();
@@ -130,14 +143,14 @@ public class MatchService {
         ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
         if (matchWebsocketRoom == null) {
-            throw new ChessMatchWebsocketCloseConnectionException("No active match with id " + matchId + " was found");
+            throw new WebsocketException(String.format(NO_ACTIVE_MATCH, matchId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_NO_ACTIVE_MATCH);
         }
 
         matchWebsocketRoom.reentrantLock.lock();
 
         try {
             matchWebsocketRoom.checkFinished();
-            String username = Utils.getCurrentUsername();
+            String username = GameMasterUtils.getCurrentUsername();
             matchWebsocketRoom.checkSubscribed(username);
 
             Match match = matchRepository.findById(matchId).orElseThrow(()
@@ -148,11 +161,23 @@ public class MatchService {
                 throw new RuntimeException("Match with id = " + matchId + " is already finished.");
             }
 
+            if (chessMove == null) {
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketBadResponseEnum.CHESS_MOVE_BAD,
+                        username, "chessMove in null");
+                return;
+            }
+            Set<ConstraintViolation<ChessMove>> violations = validator.validate(chessMove);
+            if (!violations.isEmpty()) {
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketBadResponseEnum.CHESS_MOVE_BAD,
+                        username, Utils.getConstraintViolationsAsString(violations));
+                return;
+            }
+
             UsersInMatch usersInMatch = match.getUsersInMatch();
             int currentMoveNumber = match.getCurrentMoveNumber();
 
             if (!username.equals(ChessGameUtils.getCurrentTurnUsername(usersInMatch, currentMoveNumber))) {
-                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketResponseEnum.CHESS_MOVE_BAD,
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketBadResponseEnum.CHESS_MOVE_BAD,
                                                     username, "It's not your turn");
                 return;
             }
@@ -163,7 +188,7 @@ public class MatchService {
 
             if (!ChessGameUtils.validateChessMove(chessMove, startCoords, currentTurnUserColor, boardState)) {
                 System.out.println("Move validation failed");
-                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketResponseEnum.CHESS_MOVE_BAD,
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketBadResponseEnum.CHESS_MOVE_BAD,
                                                     username, "Bad move");
                 return;
             }
@@ -171,7 +196,7 @@ public class MatchService {
             ChessPiece startPiece = boardState[startCoords.getNumberCoord()][startCoords.getLetterCoord()];
 
             if (!startPiece.makeMoveIfPossible(match, chessMove)) {
-                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketResponseEnum.CHESS_MOVE_BAD,
+                matchWebsocketRoom.sendBadResponse(ChessMatchWebsocketBadResponseEnum.CHESS_MOVE_BAD,
                                                     username, "Bad move");
                 return;
             }
@@ -195,7 +220,7 @@ public class MatchService {
             if (finished) {
                 matchWebsocketRoom.finishMatchWebsockets(match.getResult());
                 UpdateUsersRatingsRequest updateUsersRatingsRequest = mapper.mapToUpdateUsersRatingsRequest(match);
-                Utils.sendUpdateUsersRatingsRequest(updateUsersRatingsRequest);
+                GameMasterUtils.sendUpdateUsersRatingsRequest(updateUsersRatingsRequest);
             }
 
         } finally {
@@ -287,14 +312,14 @@ public class MatchService {
         ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
         if (matchWebsocketRoom == null) {
-            throw new ChessMatchWebsocketCloseConnectionException("No active match with id " + matchId + " was found");
+            throw new WebsocketException(String.format(NO_ACTIVE_MATCH, matchId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_NO_ACTIVE_MATCH);
         }
 
         matchWebsocketRoom.reentrantLock.lock();
 
         try {
             matchWebsocketRoom.checkFinished();
-            String username = Utils.getCurrentUsername();
+            String username = GameMasterUtils.getCurrentUsername();
             matchWebsocketRoom.checkSubscribed(username);
             switch (requestType) {
                 case INFO:

@@ -3,15 +3,15 @@ package tsar.alex.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import tsar.alex.exception.MatchDatabaseNotFoundException;
+import tsar.alex.exception.DatabaseRecordNotFoundException;
 import tsar.alex.mapper.GameMasterMapper;
 import tsar.alex.model.*;
 import tsar.alex.repository.MatchRepository;
 import tsar.alex.utils.ChessGameUtils;
-import tsar.alex.utils.Utils;
 
 
 import java.util.List;
+import tsar.alex.utils.GameMasterUtils;
 
 
 @Service
@@ -29,7 +29,7 @@ public class MatchWebsocketService {
 
     public ChessMatchResult finishMatchByTimeout(long matchId, ChessColor timeoutUserColor,
                                                  TimeoutTypeEnum timeoutType) {
-        Match match = matchRepository.findById(matchId).orElseThrow(() -> new MatchDatabaseNotFoundException(
+        Match match = matchRepository.findById(matchId).orElseThrow(() -> new DatabaseRecordNotFoundException(
                                                 "No match with id = " + matchId + " was found in match DB."));
         match.setFinished(true);
         String message;
@@ -59,14 +59,14 @@ public class MatchWebsocketService {
         match.setResult(matchResult);
         matchRepository.save(match);
 
-        Utils.sendUpdateUsersRatingsRequest(mapper.mapToUpdateUsersRatingsRequest(match));
+        GameMasterUtils.sendUpdateUsersRatingsRequest(mapper.mapToUpdateUsersRatingsRequest(match));
 
         return matchResult;
     }
 
 
     public ChessMatchResult finishMatch(long matchId, ChessMatchResult matchResult) {
-        Match match = matchRepository.findById(matchId).orElseThrow(() -> new MatchDatabaseNotFoundException(
+        Match match = matchRepository.findById(matchId).orElseThrow(() -> new DatabaseRecordNotFoundException(
                 "No match with id = " + matchId + " was found in match DB."));
         match.setFinished(true);
 
@@ -75,7 +75,7 @@ public class MatchWebsocketService {
         match.setResult(matchResult);
         matchRepository.save(match);
 
-        Utils.sendUpdateUsersRatingsRequest(mapper.mapToUpdateUsersRatingsRequest(match));
+        GameMasterUtils.sendUpdateUsersRatingsRequest(mapper.mapToUpdateUsersRatingsRequest(match));
 
         return matchResult;
     }

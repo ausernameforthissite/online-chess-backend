@@ -1,38 +1,47 @@
 package tsar.alex.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import lombok.Setter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChessMove {
 
+    @Min(value = 0, message = "moveNumber is less than 0")
+    @Max(value = 9000, message = "moveNumber is greater than 9000")
     private int moveNumber;
 
-    @NotNull
+    @NotNull(message = "startPiece is null")
     private ChessPieceEnum startPiece;
 
-    @NotNull
+    @NotNull(message = "startCoords field is null")
     private ChessCoords startCoords;
 
     private ChessPieceEnum endPiece;
 
-    @NotNull
+    @NotNull(message = "endCoords field is null")
     private ChessCoords endCoords;
+
+    @Min(value = -1, message = "castling is less than -1")
+    @Max(value = 1, message = "castling is greater than 9000")
     private int castling;
     private ChessPieceEnum pawnPromotionPiece;
-    private ChessMoveResult result;
 
+
+    private ChessMoveResult result;
     private boolean startPieceFirstMove;
     private boolean endPieceFirstMove;
     private ChessCoords previousEnPassantCoords;
-
     private long whiteTimeLeftMS;
     private long blackTimeLeftMS;
 
@@ -48,7 +57,7 @@ public class ChessMove {
         }
     }
 
-    public void setTimeLeftByUserColor(ChessColor  userColor, long timeLeftMS) {
+    public void setTimeLeftByUserColor(ChessColor userColor, long timeLeftMS) {
         switch (userColor) {
             case WHITE:
                 this.whiteTimeLeftMS = timeLeftMS;
@@ -60,5 +69,4 @@ public class ChessMove {
                 throw new RuntimeException("Incorrect ChessColor: " + userColor);
         }
     }
-
 }

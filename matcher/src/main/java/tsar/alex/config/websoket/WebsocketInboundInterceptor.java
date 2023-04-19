@@ -1,6 +1,8 @@
 package tsar.alex.config.websoket;
 
 
+import static tsar.alex.utils.CommonTextConstants.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -15,8 +17,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.stereotype.Component;
-import tsar.alex.exception.FindMatchCloseConnectionException;
-import tsar.alex.exception.FindMatchException;
+import tsar.alex.exception.WebsocketErrorCodeEnum;
+import tsar.alex.exception.WebsocketException;
 import tsar.alex.model.WebsocketSessionWrapper;
 import tsar.alex.utils.websocket.UsersWaitingForMatchWebsocketHolder;
 
@@ -61,10 +63,10 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
                     Authentication authentication = converter.convert(jwt);
                     accessor.setUser(authentication);
                 } catch (Exception e) {
-                    throw new FindMatchCloseConnectionException("Unauthorized");
+                    throw new WebsocketException(UNAUTHORIZED, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
                 }
             } else {
-                throw new FindMatchCloseConnectionException("No X-Authorization header was found");
+                throw new WebsocketException(NO_AUTHORIZATION_HEADER, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
         }
 
@@ -74,7 +76,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
             WebsocketSessionWrapper websocketSessionWrapper = websocketSessions.get(sessionId);
 
             if (websocketSessionWrapper == null) {
-                throw new FindMatchException("No active session with id = " + sessionId + " was found");
+                throw new WebsocketException(String.format(NO_ACTIVE_SESSION, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
 
             String username = accessor.getUser().getName();
@@ -83,7 +85,10 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
 
         if (StompCommand.UNSUBSCRIBE.equals(command)) {
             System.out.println("Unsubscribing...");
-            throw new FindMatchCloseConnectionException("You can't unsubscribe, my dear!");
+            String username = accessor.getUser().getName();
+            String sessionId = accessor.getSessionId();
+
+            throw new WebsocketException(String.format(CANNOT_UNSUBSCRIBE, username, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
 
         if (StompCommand.DISCONNECT.equals(command)) {

@@ -1,5 +1,10 @@
 package tsar.alex.utils.websocket;
 
+import static tsar.alex.utils.CommonTextConstants.*;
+
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.MessageHeaders;
@@ -8,13 +13,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.WebSocketSession;
-import tsar.alex.dto.StartMatchBadResponse;
-import tsar.alex.dto.StartMatchOkResponse;
-import tsar.alex.dto.StartMatchRequest;
-import tsar.alex.dto.StartMatchResponse;
+import tsar.alex.dto.response.StartMatchBadResponse;
+import tsar.alex.dto.response.StartMatchOkResponse;
+import tsar.alex.dto.request.StartMatchRequest;
+import tsar.alex.dto.response.StartMatchResponse;
 import tsar.alex.dto.websocket.response.*;
-import tsar.alex.exception.FindMatchCloseConnectionException;
-import tsar.alex.exception.FindMatchException;
+import tsar.alex.dto.websocket.response.FindMatchWebsocketResponseEnum.FindMatchWebsocketBadResponseEnum;
+import tsar.alex.exception.UnexpectedDatabaseResultException;
+import tsar.alex.exception.WebsocketErrorCodeEnum;
+import tsar.alex.exception.WebsocketException;
 import tsar.alex.mapper.MatcherMapper;
 import tsar.alex.model.*;
 import tsar.alex.service.MatcherService;
@@ -32,32 +39,29 @@ public class UsersWaitingForMatchWebsocketHolder {
 
     private final ThreadLocalRandom threadLocalRandom;
     private final MatcherMapper matcherMapper;
-
+    private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
     private final ScheduledExecutorService scheduledExecutorService;
-
     private final MatcherService matcherService;
-
 
     public void addUserIfPossible(String username, WebsocketSessionWrapper websocketSessionWrapper) {
         WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, true);
 
-        List<ChessMatchUserRatingsRecord> activeMatches = matcherService
-                                                            .findActiveMatchesRecordsByUsername(username);
-        System.out.println("Active matches: " + activeMatches);
-        if (activeMatches != null && activeMatches.size() != 0) {
-            if (activeMatches.size() == 1) {
-                throw new FindMatchCloseConnectionException("You are already in match with id="
-                        + activeMatches.get(0).getMatchId());
-            } else {
-                throw new FindMatchException("Several active matches were found");
+        try {
+            List<ChessMatchUserRatingsRecord> activeMatches = matcherService.findActiveMatchesRecordsByUsername(username);
+
+            if (activeMatches != null && activeMatches.size() == 1) {
+                throw new WebsocketException(String.format(ALREADY_IN_MATCH, activeMatches.get(0).getMatchId()), WebsocketErrorCodeEnum.CLOSE_CONNECTION_ALREADY_IN_MATCH);
             }
+        } catch (UnexpectedDatabaseResultException e) {
+            throw new WebsocketException(e, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
+
 
         CurrentUserRating userRating = matcherService.getCurrentUserRating(username);
 
         if (userRating == null) {
-            throw new FindMatchException("No rating record was found for username = " + username);
+            throw new WebsocketException(String.format(NOT_FOUND_USERNAME, username), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
 
         UserWaitingForMatch UWFM = new UserWaitingForMatch();
@@ -71,8 +75,7 @@ public class UsersWaitingForMatchWebsocketHolder {
                 WebSocketSession session = oldUWFM.getSessionWrapper().getSession();
 
                 if (session != null && session.isOpen()) {
-                    throw new FindMatchCloseConnectionException("You are already searching for match" +
-                            " (maybe from another window or device)");
+                    throw new WebsocketException(ALREADY_SEARCHING, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
                 }
 
                 UWFM.setWaitingForAnswer(oldUWFM.isWaitingForAnswer());
@@ -96,9 +99,8 @@ public class UsersWaitingForMatchWebsocketHolder {
             UWFM = UWFMmap.get(username);
             System.out.println("Cancel : " + UWFM);
             if (UWFM != null && UWFM.isWaitingForAnswer()) {
-                sendMessageToWebsocketSession(
-                        new FindMatchCancelBadResponse("Can't cancel. Match is already being created."),
-                        UWFM.getSessionWrapper().getSession());
+                String responseAsJsonString = mapResponseToJSONString(new FindMatchBadResponse("Can't cancel. Match is already being created.", FindMatchWebsocketBadResponseEnum.CANCEL_BAD));
+                sendMessageToWebsocketSession(responseAsJsonString, UWFM.getSessionWrapper().getSession());
                 return;
             }
 
@@ -107,7 +109,8 @@ public class UsersWaitingForMatchWebsocketHolder {
 
         if (UWFM != null) {
             WebsocketSessionWrapper websocketSessionWrapper = UWFM.getSessionWrapper();
-            sendMessageToWebsocketSession(new FindMatchCancelOkResponse(), websocketSessionWrapper.getSession());
+            String responseAsJsonString = mapResponseToJSONString(new FindMatchCancelOkResponse());
+            sendMessageToWebsocketSession(responseAsJsonString, websocketSessionWrapper.getSession());
             WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, true);
             setDisconnectTimeoutFinisher(websocketSessionWrapper);
         } else {
@@ -130,9 +133,9 @@ public class UsersWaitingForMatchWebsocketHolder {
 
         if (UWFM != null) {
             WebsocketSessionWrapper websocketSessionWrapper = UWFM.getSessionWrapper();
-            sendMessageToWebsocketSession(new FindMatchBadResponse(
-                            "Can't find enemy for you. It seems nobody wants to play now =( Please, try again later"),
-                    websocketSessionWrapper.getSession());
+            String responseAsJsonString = mapResponseToJSONString(new FindMatchBadResponse(
+                    "Can't find enemy for you. It seems nobody wants to play now =( Please, try again later", FindMatchWebsocketBadResponseEnum.FIND_MATCH_BAD));
+            sendMessageToWebsocketSession(responseAsJsonString, websocketSessionWrapper.getSession());
             setDisconnectTimeoutFinisher(websocketSessionWrapper);
         } else {
             System.out.println("No UWFM with username = " + username + " was found");
@@ -147,7 +150,6 @@ public class UsersWaitingForMatchWebsocketHolder {
 
             if (UWFM != null) {
                 WebsocketSessionWrapper websocketSessionWrapper = UWFM.getSessionWrapper();
-                WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, false);
 
                 if (UWFM.isWaitingForAnswer()) {
                     return;
@@ -158,6 +160,7 @@ public class UsersWaitingForMatchWebsocketHolder {
                 if (websocketSession == null || !sessionId.equals(websocketSession.getId())) {
                     return;
                 }
+                WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, true);
             }
             UWFMmap.remove(username);
         }
@@ -176,18 +179,33 @@ public class UsersWaitingForMatchWebsocketHolder {
     }
 
 
-    private void sendMessageToWebsocketSession(FindMatchWebsocketResponse response, WebSocketSession websocketSession) {
+    private void sendMessageToWebsocketSession(String responseAsJSONString, WebSocketSession websocketSession) {
         String sessionId = websocketSession.getId();
+        String shortMessage;
+
+        if (responseAsJSONString.length() < 10) {
+            shortMessage = responseAsJSONString;
+        } else if (responseAsJSONString.length() < 25) {
+            shortMessage = responseAsJSONString.substring(9);
+        } else {
+            shortMessage = responseAsJSONString.substring(9, 25);
+        }
+        System.out.println("Sending websocket response " + shortMessage + " to session id " + sessionId);
 
         MessageHeaders headers = WebsocketCommonUtils.prepareMessageHeaders(sessionId);
 
         if (websocketSession.isOpen()) {
-            messagingTemplate.convertAndSendToUser(sessionId,"/queue/find_match/response", response, headers);
+            messagingTemplate.convertAndSendToUser(sessionId,"/queue/find_match/response", responseAsJSONString, headers);
         }
-
-        System.out.println("Send " + response.getType() + " to " + sessionId);
     }
 
+    private String mapResponseToJSONString(FindMatchWebsocketResponse response) {
+        try {
+            return objectMapper.writeValueAsString(response);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     @Scheduled(fixedDelay = 30 * 1000, initialDelay = 30 * 1000)
@@ -257,14 +275,16 @@ public class UsersWaitingForMatchWebsocketHolder {
                     } else {
                         StartMatchBadResponse badResponse = (StartMatchBadResponse) response;
                         System.out.println(badResponse.getMessage());
-                        websocketResponse = new FindMatchBadResponse("Something went wrong!");
+                        websocketResponse = new FindMatchBadResponse("Something went wrong!", FindMatchWebsocketBadResponseEnum.FIND_MATCH_BAD);
                     }
+
+                    String responseAsJsonString = mapResponseToJSONString(websocketResponse);
 
                     UserWaitingForMatch[] UWFMPairArray = UWFMPair.getPairArray();
 
                     for (UserWaitingForMatch UWFM : UWFMPairArray) {
                         WebsocketSessionWrapper websocketSessionWrapper = UWFM.getSessionWrapper();
-                        sendMessageToWebsocketSession(websocketResponse, websocketSessionWrapper.getSession());
+                        sendMessageToWebsocketSession(responseAsJsonString, websocketSessionWrapper.getSession());
                         WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, true);
                         setDisconnectTimeoutFinisher(websocketSessionWrapper);
                     }

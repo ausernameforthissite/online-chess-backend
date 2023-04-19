@@ -16,7 +16,7 @@ public class Pair<T> {
     private T[] pairArray;
 
     public Pair(@JsonProperty("pairArray") T[] pairArray) {
-        if (pairArray.length == 2) {
+        if (pairArray.length == ELEMENTS_IN_PAIR) {
             this.pairArray = pairArray;
         } else {
             throw new ArrayIndexOutOfBoundsException();

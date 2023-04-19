@@ -1,11 +1,18 @@
 package tsar.alex.controller;
 
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import tsar.alex.dto.*;
+import tsar.alex.dto.request.StartMatchRequest;
+import tsar.alex.dto.response.RestApiOkResponse;
+import tsar.alex.dto.response.StartMatchBadResponse;
+import tsar.alex.dto.response.StartMatchResponse;
 import tsar.alex.service.MatchService;
+import tsar.alex.utils.Utils;
 
 
 @RestController
@@ -16,25 +23,24 @@ public class MatchController {
     private final MatchService matchService;
 
     @PostMapping("/start")
-    public ResponseEntity<StartMatchResponse> startMatch(@RequestBody StartMatchRequest startMatchRequest) {
+    public ResponseEntity<StartMatchResponse> startMatch(@RequestBody @Valid StartMatchRequest startMatchRequest,
+                                                            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(new StartMatchBadResponse(Utils.getBindingResultErrorsAsString(bindingResult)),
+                    HttpStatus.BAD_REQUEST);
+        }
         StartMatchResponse response = matchService.startMatch(startMatchRequest.getPairOfUsernames());
 
-        if (response instanceof StartMatchOkResponse) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+        HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(response, httpStatus);
     }
 
 
     @GetMapping("/{id}/state")
     public ResponseEntity<MatchStateResponse> getMatchState(@PathVariable("id") long matchId) {
         MatchStateResponse response = matchService.getMatchState(matchId);
-        if (response instanceof MatchStateOkResponse) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-    }
 
+        HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(response, httpStatus);
+    }
 }

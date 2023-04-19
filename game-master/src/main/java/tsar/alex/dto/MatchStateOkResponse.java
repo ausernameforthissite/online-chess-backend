@@ -1,16 +1,19 @@
 package tsar.alex.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import tsar.alex.dto.response.RestApiOkResponse;
 import tsar.alex.model.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MatchStateOkResponse implements MatchStateResponse {
+public class MatchStateOkResponse implements MatchStateResponse, RestApiOkResponse {
     private boolean finished;
     private UsersInMatch usersInMatch;
     private ChessMatchResult matchResult;
