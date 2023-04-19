@@ -4,109 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="Merge GameMaster to Master">
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/request/LoginRegisterRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/LoginRefreshBadResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/LoginRefreshResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/LogoutResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/RegisterBadResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/RegisterOkResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/RegisterResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/GeneralBadResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/InitializeUserRatingBadResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/InitializeUserRatingOkResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/InitializeUserRatingResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/RestApiBadResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/RestApiOkResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/StartMatchBadResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/StartMatchResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/UpdateUsersRatingsBadResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/UpdateUsersRatingsOkResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/UpdateUsersRatingsResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/exception/DatabaseRecordNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/exception/RestApiResponseException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/exception/WebsocketErrorCodeEnum.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/CommonTextConstants.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/Endpoints.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/Utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UserInMatchStatusFalseResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UserInMatchStatusResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UserInMatchStatusTrueResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/exception/UnexpectedDatabaseResultException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/utils/MatcherUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453/storage_v2/_src_/database/matcher_db.qwKBbw/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453/storage_v2/_src_/database/matcher_db.qwKBbw/schema/public.abK9xQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/af5926e9-1911-4732-b215-e3627ce5a287.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/af5926e9-1911-4732-b215-e3627ce5a287.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/d4b47e3e-bfef-449f-9c64-212da0624b98.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/d4b47e3e-bfef-449f-9c64-212da0624b98.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/d4b47e3e-bfef-449f-9c64-212da0624b98/storage_v2/_src_/database/auth_db.ddJ22Q/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/d4b47e3e-bfef-449f-9c64-212da0624b98/storage_v2/_src_/database/auth_db.ddJ22Q/schema/public.abK9xQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/AccessTokenDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/LoginRefreshOkResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/AuthRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/AuthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/LoginRefreshDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/RefreshTokenDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/RefreshTokenDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/exception/AuthenticationException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/exception/RefreshTokenException.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/exception/RefreshTokenException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/mapper/AuthMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/mapper/AuthMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/AccessToken.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/JwtProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/security/JwtProvider.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/RefreshTokenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/service/RefreshTokenService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/config/websocket/CustomErrorHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/config/websocket/CustomErrorHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/InitializeUserRatingRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/request/InitializeUserRatingRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/StartMatchBadResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth/src/main/java/tsar/alex/dto/response/LogoutBadResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/StartMatchOkResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/StartMatchOkResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/StartMatchRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/request/StartMatchRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/StartMatchResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/UpdateUsersRatingsRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/request/UpdateUsersRatingsRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/exception/WebsocketCloseConnectionException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/exception/WebsocketException.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/exception/WebsocketException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/model/Pair.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/model/Pair.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchController.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchWebsocketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchWebsocketController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/MatchStateBadResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/MatchStateBadResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/MatchStateOkResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/MatchStateOkResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchInfoRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchInfoRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchMoveRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchMoveRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchSurrenderRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchSurrenderRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/response/ChessMatchBadResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/response/ChessMatchBadResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/response/ChessMatchWebsocketResponseEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/response/ChessMatchWebsocketResponseEnum.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/exception/ChessMatchWebsocketCloseConnectionException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/exception/ChessMatchWebsocketException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/exception/MatchDatabaseNotFoundException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/mapper/GameMasterMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/mapper/GameMasterMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/ChessCoords.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/ChessCoords.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/ChessMove.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/ChessMove.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/CurrentUsersOnlineStatusesAndTimingsFirstMove.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/CurrentUsersOnlineStatusesAndTimingsFirstMove.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/UsersInMatchWithOnlineStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/UsersInMatchWithOnlineStatusesAndTimings.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchService.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchWebsocketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchWebsocketService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/ChessGameConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/ChessGameConstants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/GameMasterUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoom.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoom.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoomsHolder.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoomsHolder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/controller/FindMatchWebsocketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/controller/FindMatchWebsocketController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/controller/UserRatingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/controller/UserRatingController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/UsersRatingsDataForMatchBadResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UsersRatingsDataForMatchBadResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/UsersRatingsDataForMatchOkResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UsersRatingsDataForMatchOkResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/UsersRatingsDataForMatchResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UsersRatingsDataForMatchResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/request/FindMatchCancelRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/request/FindMatchCancelRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/request/FindMatchWebsocketRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/request/FindMatchWebsocketRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/response/FindMatchBadResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/response/FindMatchBadResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/response/FindMatchCancelBadResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/response/FindMatchWebsocketResponseEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/response/FindMatchWebsocketResponseEnum.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/exception/FindMatchCloseConnectionException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/exception/FindMatchException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/mapper/MatcherMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/mapper/MatcherMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/service/MatcherService.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/service/MatcherService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/utils/websocket/UsersWaitingForMatchWebsocketHolder.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/utils/websocket/UsersWaitingForMatchWebsocketHolder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-    </list>
+    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="Merge GameMaster to Master" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -130,7 +28,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="validation" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -272,8 +170,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Spring Boot.GameMasterApplication" />
         <item itemvalue="Spring Boot.MatcherApplication" />
+        <item itemvalue="Spring Boot.GameMasterApplication" />
         <item itemvalue="Spring Boot.AuthApplication" />
         <item itemvalue="Application.Program" />
         <item itemvalue="Spring Boot.GameMasterApplication" />
