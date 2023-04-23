@@ -20,4 +20,5 @@ public class GameMasterUtils {
                 "http://localhost:8081/api/update_users_ratings", request, Void.class);
         System.out.println("Update users rating response status: " + response.getStatusCode());
     }
+
 }

@@ -10,5 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInMatchStatusTrueResponse implements UserInMatchStatusResponse {
-    private long matchId;
+    private String matchId;
 }

@@ -15,7 +15,7 @@ import java.time.Instant;
 public class ChessMatchUserRatingsRecord {
     @Id
     @Column(name = "match_id")
-    private long matchId;
+    private String matchId;
 
     @Column(name = "started_at")
     private Instant startedAt;

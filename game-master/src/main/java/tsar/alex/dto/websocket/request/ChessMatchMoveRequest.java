@@ -8,7 +8,7 @@ import tsar.alex.model.ChessMove;
 @Getter
 @Setter
 public class ChessMatchMoveRequest extends ChessMatchWebsocketRequest {
-    @NotNull
+    @NotNull(message = "chessMove is null")
     private ChessMove chessMove;
 
     public ChessMatchMoveRequest() {

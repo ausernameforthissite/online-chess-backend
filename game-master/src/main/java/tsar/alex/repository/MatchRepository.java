@@ -6,7 +6,7 @@ import tsar.alex.model.Match;
 
 import java.util.List;
 
-public interface MatchRepository extends MongoRepository<Match, Long> {
+public interface MatchRepository extends MongoRepository<Match, String> {
 
     @Query(value = "{ 'finished' : false, '$or':[{'UsersInMatch.whiteUsername': ?0}, {'UsersInMatch.whiteUsername': ?0}] }")
     List<Match> findActiveMatchesByUsername(String username);

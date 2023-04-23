@@ -34,7 +34,7 @@ public class MatchWebsocketController {
     @MessageMapping("/chess_match/request")
     public void handleChessMatchWebsocketMessage(ChessMatchWebsocketRequest request, Principal user) {
 
-        long matchId = (long) ((AbstractAuthenticationToken) user).getDetails();
+        String matchId = (String) ((AbstractAuthenticationToken) user).getDetails();
 
         ChessMatchWebsocketRequestEnum requestType = request.getType();
 

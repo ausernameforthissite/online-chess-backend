@@ -29,7 +29,7 @@ public class ChessMatchWebsocketRoom {
 
     private final Map<String, WebsocketSessionWrapper> usersSubscribedToMatch = new ConcurrentHashMap<>(2);
     private final ScheduledFuture<?>[] timeoutFinishers = new ScheduledFuture[4];
-    private final long matchId;
+    private final String matchId;
     private final UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings;
     private boolean finished;
     private int lastMoveNumber = -1;

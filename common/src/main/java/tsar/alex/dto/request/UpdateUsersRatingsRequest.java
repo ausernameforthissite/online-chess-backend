@@ -10,7 +10,7 @@ import tsar.alex.model.ChessColor;
 @NoArgsConstructor
 public class UpdateUsersRatingsRequest {
     @NotNull(message = "matchId is null")
-    private long matchId;
+    private String matchId;
     private boolean technicalFinish;
     private boolean draw;
     private ChessColor winnerColor;

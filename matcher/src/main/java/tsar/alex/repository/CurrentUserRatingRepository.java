@@ -6,6 +6,5 @@ import tsar.alex.model.CurrentUserRating;
 
 @Repository
 public interface CurrentUserRatingRepository extends JpaRepository<CurrentUserRating, String> {
-
     boolean existsByUsername(String username);
 }

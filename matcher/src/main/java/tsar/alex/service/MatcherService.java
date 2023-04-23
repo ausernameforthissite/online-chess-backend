@@ -66,7 +66,7 @@ public class MatcherService {
     }
 
     @Transactional(readOnly = true)
-    public UsersRatingsDataForMatchResponse getUsersRatingsDataByMatchId(long matchId) {
+    public UsersRatingsDataForMatchResponse getUsersRatingsDataByMatchId(String matchId) {
         Optional<ChessMatchUserRatingsRecord> matchUserRatingsRecordOptional = chessMatchUserRatingsRecordRepository
                 .findById(matchId);
         if (matchUserRatingsRecordOptional.isEmpty()) {
@@ -93,7 +93,7 @@ public class MatcherService {
     }
 
     public void updateAfterMatchFinished(UpdateUsersRatingsRequest request) {
-        long matchId = request.getMatchId();
+        String matchId = request.getMatchId();
         ChessMatchUserRatingsRecord matchUserRatingsRecord = chessMatchUserRatingsRecordRepository
                 .findById(matchId).orElseThrow(() -> new RuntimeException(String.format(MATCH_ID_NOT_FOUND, matchId)));
 

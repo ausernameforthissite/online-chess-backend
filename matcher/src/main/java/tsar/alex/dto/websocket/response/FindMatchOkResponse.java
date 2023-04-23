@@ -7,9 +7,9 @@ import lombok.Setter;
 @Setter
 public class FindMatchOkResponse extends FindMatchWebsocketResponse {
 
-    private long matchId;
+    private String matchId;
 
-    public FindMatchOkResponse(long matchId) {
+    public FindMatchOkResponse(String matchId) {
         super(FindMatchWebsocketResponseEnum.OK);
         this.matchId = matchId;
     }

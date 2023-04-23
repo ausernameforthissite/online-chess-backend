@@ -18,7 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @Component
 @RequiredArgsConstructor
 public class ChessMatchWebsocketRoomsHolder {
-    private final Map<Long, ChessMatchWebsocketRoom> matchWebsocketRooms = new ConcurrentHashMap<>();
+    private final Map<String, ChessMatchWebsocketRoom> matchWebsocketRooms = new ConcurrentHashMap<>();
 
     private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
@@ -67,7 +67,7 @@ public class ChessMatchWebsocketRoomsHolder {
         }
     }
 
-    public ChessMatchWebsocketRoom addMatchWebsocketRoom(long matchId, UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings) {
+    public ChessMatchWebsocketRoom addMatchWebsocketRoom(String matchId, UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings) {
         if (matchWebsocketRooms.containsKey(matchId)) {
             throw new RuntimeException("Room with match id = " + matchId + " already exists!");
         } else {
@@ -80,15 +80,15 @@ public class ChessMatchWebsocketRoomsHolder {
         }
     }
 
-    public ChessMatchWebsocketRoom addMatchWebsocketRoom(long matchId, UsersInMatch usersInMatch) {
+    public ChessMatchWebsocketRoom addMatchWebsocketRoom(String matchId, UsersInMatch usersInMatch) {
         return addMatchWebsocketRoom(matchId, new UsersInMatchWithOnlineStatusesAndTimings(usersInMatch));
     }
 
-    public ChessMatchWebsocketRoom getMatchWebsocketRoom(long matchId) {
+    public ChessMatchWebsocketRoom getMatchWebsocketRoom(String matchId) {
         return matchWebsocketRooms.get(matchId);
     }
 
-    public ChessMatchWebsocketRoom removeMatchWebsocketRoom(long matchId) {
+    public ChessMatchWebsocketRoom removeMatchWebsocketRoom(String matchId) {
         return matchWebsocketRooms.remove(matchId);
     }
 

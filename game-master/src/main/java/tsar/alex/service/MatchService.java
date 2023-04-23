@@ -82,7 +82,7 @@ public class MatchService {
                 .chessPositionsRecord(initialChessPositionsRecord)
                 .build();
 
-        long matchId = matchRepository.save(match).getId();
+        String matchId = matchRepository.save(match).getId();
         ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.addMatchWebsocketRoom(matchId,
                                                                                                 usersInMatch);
         matchWebsocketRoom.reentrantLock.lock();
@@ -115,7 +115,7 @@ public class MatchService {
                 if (numberOfMatches == 1) {
                     errorMessage += "match with id = " + activeMatchesForSpecificUser.get(0).getId();
                 } else {
-                    List<Long> matchIds = activeMatchesForSpecificUser.stream().map(Match::getId).toList();
+                    List<String> matchIds = activeMatchesForSpecificUser.stream().map(Match::getId).toList();
                     errorMessage += "matches with ids = [" + matchIds.stream().map(String::valueOf)
                             .collect(Collectors.joining(", ")) +"]";
                 }
@@ -126,7 +126,7 @@ public class MatchService {
     }
 
 
-    public MatchStateResponse getMatchState(long matchId) {
+    public MatchStateResponse getMatchState(String matchId) {
         Optional<Match> matchOptional = matchRepository.findById(matchId);
 
         if (matchOptional.isEmpty()) {
@@ -138,7 +138,7 @@ public class MatchService {
         return mapper.mapToMatchStateOkResponse(match);
     }
 
-    public void makeMove(long matchId, ChessMove chessMove) {
+    public void makeMove(String matchId, ChessMove chessMove) {
 
         ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
@@ -308,7 +308,7 @@ public class MatchService {
     }
 
 
-    public void handleUserMatchRequest(long matchId, ChessMatchWebsocketRequestEnum requestType) {
+    public void handleUserMatchRequest(String matchId, ChessMatchWebsocketRequestEnum requestType) {
         ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
         if (matchWebsocketRoom == null) {

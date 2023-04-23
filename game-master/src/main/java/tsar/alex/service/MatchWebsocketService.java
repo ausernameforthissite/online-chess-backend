@@ -27,7 +27,7 @@ public class MatchWebsocketService {
         return matchRepository.getMatchesByFinishedFalse();
     }
 
-    public ChessMatchResult finishMatchByTimeout(long matchId, ChessColor timeoutUserColor,
+    public ChessMatchResult finishMatchByTimeout(String matchId, ChessColor timeoutUserColor,
                                                  TimeoutTypeEnum timeoutType) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new DatabaseRecordNotFoundException(
                                                 "No match with id = " + matchId + " was found in match DB."));
@@ -65,7 +65,7 @@ public class MatchWebsocketService {
     }
 
 
-    public ChessMatchResult finishMatch(long matchId, ChessMatchResult matchResult) {
+    public ChessMatchResult finishMatch(String matchId, ChessMatchResult matchResult) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new DatabaseRecordNotFoundException(
                 "No match with id = " + matchId + " was found in match DB."));
         match.setFinished(true);

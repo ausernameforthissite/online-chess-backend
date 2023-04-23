@@ -9,7 +9,7 @@ CREATE TABLE current_user_rating (
 );
 
 CREATE TABLE chess_match_user_ratings_record (
-     match_id BIGINT PRIMARY KEY,
+     match_id VARCHAR(50) PRIMARY KEY,
      started_at TIMESTAMPTZ NOT NULL,
      finished BOOLEAN NOT NULL,
      white_username VARCHAR(50) NOT NULL,

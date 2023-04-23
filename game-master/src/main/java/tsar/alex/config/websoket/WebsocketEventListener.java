@@ -38,7 +38,7 @@ public class WebsocketEventListener {
 
         AbstractAuthenticationToken authentication = (AbstractAuthenticationToken) accessor.getUser();
 
-        long matchId = (Long) authentication.getDetails();
+        String matchId = (String) authentication.getDetails();
         ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
         if (matchWebsocketRoom == null) {

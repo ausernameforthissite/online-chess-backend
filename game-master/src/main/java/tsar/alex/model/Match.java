@@ -13,10 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Document(collection = "match")
-public class Match implements Comparable<Match> {
+public class Match {
 
     @Id
-    private long id;
+    private String id;
     private Instant startedAt;
     private long lastMoveTimeMS;
     private boolean finished;
@@ -31,10 +31,5 @@ public class Match implements Comparable<Match> {
 
     public int getCurrentMoveNumber() {
         return chessMovesRecord == null ? 0 : chessMovesRecord.size();
-    }
-
-    @Override
-    public int compareTo(Match o) {
-        return Long.compare(id, o.id);
     }
 }

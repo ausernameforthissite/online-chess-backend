@@ -15,6 +15,7 @@ import tsar.alex.dto.response.UpdateUsersRatingsBadResponse;
 import tsar.alex.dto.response.UpdateUsersRatingsOkResponse;
 import tsar.alex.dto.response.UpdateUsersRatingsResponse;
 import tsar.alex.dto.response.UserInMatchStatusResponse;
+import tsar.alex.dto.response.UsersRatingsDataForMatchBadResponse;
 import tsar.alex.dto.response.UsersRatingsDataForMatchResponse;
 import tsar.alex.service.MatcherService;
 import tsar.alex.utils.Utils;
@@ -28,10 +29,16 @@ public class UserRatingController {
     private final MatcherService matcherService;
 
     @GetMapping("/match/{id}/ratings")
-    public ResponseEntity<UsersRatingsDataForMatchResponse> getUsersRatingDataByMatchId(@PathVariable("id") long matchId) {
+    public ResponseEntity<UsersRatingsDataForMatchResponse> getUsersRatingDataByMatchId(@PathVariable("id") String matchId) {
+        String errorMessage = Utils.validateMatchId(matchId);
+
+        if (errorMessage != null) {
+            return new ResponseEntity<>(new UsersRatingsDataForMatchBadResponse(errorMessage), HttpStatus.NOT_FOUND);
+        }
+
         UsersRatingsDataForMatchResponse response = matcherService.getUsersRatingsDataByMatchId(matchId);
 
-        HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.NOT_FOUND;
         return new ResponseEntity<>(response, httpStatus);
     }
 

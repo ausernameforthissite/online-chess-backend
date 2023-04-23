@@ -37,10 +37,17 @@ public class MatchController {
 
 
     @GetMapping("/{id}/state")
-    public ResponseEntity<MatchStateResponse> getMatchState(@PathVariable("id") long matchId) {
+    public ResponseEntity<MatchStateResponse> getMatchState(@PathVariable("id") String matchId) {
+
+        String errorMessage = Utils.validateMatchId(matchId);
+
+        if (errorMessage != null) {
+            return new ResponseEntity<>(new MatchStateBadResponse(errorMessage), HttpStatus.NOT_FOUND);
+        }
+
         MatchStateResponse response = matchService.getMatchState(matchId);
 
-        HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.NOT_FOUND;
         return new ResponseEntity<>(response, httpStatus);
     }
 }

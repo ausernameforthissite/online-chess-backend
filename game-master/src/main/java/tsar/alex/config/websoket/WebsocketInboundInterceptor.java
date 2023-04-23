@@ -1,6 +1,7 @@
 package tsar.alex.config.websoket;
 
 import static tsar.alex.utils.CommonTextConstants.*;
+import static tsar.alex.utils.Utils.validateMatchId;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,15 +53,15 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
             System.out.println("Connect");
             List<String> matchIdHeader = accessor.getNativeHeader("Match-Id");
 
-            long matchId;
+            String matchId;
 
             if (matchIdHeader != null && matchIdHeader.size() == 1) {
-                try {
-                    matchId = Long.parseLong(matchIdHeader.get(0));
-                } catch (NumberFormatException e) {
-                    throw new WebsocketException(INCORRECT_MATCH_ID, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
-                }
+                matchId = matchIdHeader.get(0);
 
+                String errorMessage = validateMatchId(matchId);
+                if (errorMessage != null) {
+                    throw new WebsocketException(errorMessage, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
+                }
             } else {
                 throw new WebsocketException(NO_MATCH_ID_HEADER, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
@@ -108,7 +109,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
 
             WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, true);
             AbstractAuthenticationToken authentication = (AbstractAuthenticationToken) accessor.getUser();
-            long matchId = (Long) authentication.getDetails();
+            String matchId = (String) authentication.getDetails();
             ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
 
             if (matchWebsocketRoom == null) {
@@ -129,7 +130,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
 
         if (StompCommand.UNSUBSCRIBE.equals(command)) {
             System.out.println("Unsubscribe");
-            String username = ((AbstractAuthenticationToken) accessor.getUser()).getName();
+            String username = accessor.getUser().getName();
             String sessionId = accessor.getSessionId();
 
             throw new WebsocketException(String.format(CANNOT_UNSUBSCRIBE, username, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
