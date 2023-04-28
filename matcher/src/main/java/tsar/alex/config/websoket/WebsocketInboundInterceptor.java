@@ -3,6 +3,7 @@ package tsar.alex.config.websoket;
 
 import static tsar.alex.utils.CommonTextConstants.*;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -12,13 +13,14 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.stereotype.Component;
 import tsar.alex.exception.WebsocketErrorCodeEnum;
 import tsar.alex.exception.WebsocketException;
+import tsar.alex.model.ChessGameTypeWithTimings;
 import tsar.alex.model.WebsocketSessionWrapper;
 import tsar.alex.utils.websocket.UsersWaitingForMatchWebsocketHolder;
 
@@ -43,7 +45,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
     }
 
     @Override
-    public Message<?> preSend(Message message, MessageChannel channel) {
+    public Message<?> preSend(@NonNull Message message, @NonNull MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         StompCommand command = accessor.getCommand();
 
@@ -53,6 +55,7 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
 
             System.out.println("Connecting...");
             List<String> authorization = accessor.getNativeHeader("X-Authorization");
+            AbstractAuthenticationToken authentication;
 
             if (authorization != null && authorization.size() == 1) {
                 try {
@@ -60,13 +63,27 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
                     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
                     Jwt jwt = jwtDecoder.decode(accessToken);
                     converter.setPrincipalClaimName("username");
-                    Authentication authentication = converter.convert(jwt);
+                    authentication = converter.convert(jwt);
                     accessor.setUser(authentication);
                 } catch (Exception e) {
                     throw new WebsocketException(UNAUTHORIZED, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
                 }
             } else {
                 throw new WebsocketException(NO_AUTHORIZATION_HEADER, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
+            }
+
+
+            List<String> searchGameTypeArray = accessor.getNativeHeader("GameType");
+            if (searchGameTypeArray != null && searchGameTypeArray.size() == 1) {
+                try {
+                    String searchGameTypeString = searchGameTypeArray.get(0);
+                    ChessGameTypeWithTimings searchGameType = ChessGameTypeWithTimings.valueOf(searchGameTypeString.toUpperCase());
+                    authentication.setDetails(searchGameType);
+                } catch (Exception e) {
+                    throw new WebsocketException(INCORRECT_GAME_TYPE, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
+                }
+            } else {
+                throw new WebsocketException(NO_GAME_TYPE_HEADER, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
         }
 
@@ -79,8 +96,10 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
                 throw new WebsocketException(String.format(NO_ACTIVE_SESSION, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
 
-            String username = accessor.getUser().getName();
-            UWFMWebsocketHolder.addUserIfPossible(username, websocketSessionWrapper);
+            AbstractAuthenticationToken authentication = (AbstractAuthenticationToken) accessor.getUser();
+            ChessGameTypeWithTimings searchGameType = (ChessGameTypeWithTimings) authentication.getDetails();
+
+            UWFMWebsocketHolder.addUserIfPossible(authentication.getName(), searchGameType, websocketSessionWrapper);
         }
 
         if (StompCommand.UNSUBSCRIBE.equals(command)) {

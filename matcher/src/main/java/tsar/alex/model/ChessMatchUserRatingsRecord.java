@@ -17,6 +17,10 @@ public class ChessMatchUserRatingsRecord {
     @Column(name = "match_id")
     private String matchId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chess_game_type")
+    private ChessGameTypeWithTimings chessGameType;
+
     @Column(name = "started_at")
     private Instant startedAt;
 

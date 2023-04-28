@@ -13,8 +13,8 @@ public class WebsocketSessionWrapper {
     private ScheduledFuture<?> timeoutFinisher;
 
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-    private final Lock readLock = rwLock.readLock();
-    private final Lock writeLock = rwLock.writeLock();
+    protected final Lock readLock = rwLock.readLock();
+    protected final Lock writeLock = rwLock.writeLock();
 
 
     public WebsocketSessionWrapper(WebSocketSession session, ScheduledFuture<?> timeoutFinisher) {

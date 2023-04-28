@@ -4,44 +4,37 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="Merge Validation to Master">
+    <list default="true" id="9b651bb7-aefa-472a-aae3-17fab0af0444" name="Changes" comment="### Change matchId type ###&#10;1. Change matchId type from sequential number to nano ID string.&#10;2. Add matchId validation and error handling.">
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/model/ChessGameType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/model/ChessGameTypeWithTimings.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/CurrentUserRatingId.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453/storage_v2/_src_/database/matcher_db.qwKBbw/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/89e51c17-b513-4355-8138-d69e183d7453/storage_v2/_src_/database/matcher_db.qwKBbw/schema/public.abK9xQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/af5926e9-1911-4732-b215-e3627ce5a287.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/af5926e9-1911-4732-b215-e3627ce5a287.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_19_04_2023,_21_54_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_19_04_2023__21_54__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Merge_at_19_04_2023,_21_56_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Merge_at_19_04_2023__21_56__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/auth/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/request/UpdateUsersRatingsRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/request/UpdateUsersRatingsRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/StartMatchOkResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/response/StartMatchOkResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/request/StartMatchRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/dto/request/StartMatchRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/model/WebsocketSessionWrapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/model/WebsocketSessionWrapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/CommonTextConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/CommonTextConstants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/Constants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/tsar/alex/utils/Utils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/config/websoket/WebsocketEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/config/websoket/WebsocketEventListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchController.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchWebsocketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/controller/MatchWebsocketController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchMoveRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/request/ChessMatchMoveRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/ActiveMatch.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/response/ChessMatchInfoResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/dto/websocket/response/ChessMatchInfoResponse.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/Match.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/Match.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/model/PrimarySequence.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/repository/MatchListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/repository/MatchListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/repository/MatchRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/repository/MatchRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchService.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchWebsocketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/MatchWebsocketService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/service/PrimarySequenceService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/GameMasterUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/GameMasterUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/ChessGameConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/ChessGameConstants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/ChessGameUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/ChessGameUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoom.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoom.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoomsHolder.java" beforeDir="false" afterPath="$PROJECT_DIR$/game-master/src/main/java/tsar/alex/utils/websocket/ChessMatchWebsocketRoomsHolder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/controller/UserRatingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/controller/UserRatingController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UserInMatchStatusTrueResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/response/UserInMatchStatusTrueResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/response/FindMatchOkResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/dto/websocket/response/FindMatchOkResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/config/websoket/WebsocketInboundInterceptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/mapper/MatcherMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/mapper/MatcherMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/ChessMatchUserRatingsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/ChessMatchUserRatingsRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/repository/ChessMatchUserRatingsRecordRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/repository/ChessMatchUserRatingsRecordRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/CurrentUserRating.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/CurrentUserRating.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/UserWaitingForMatch.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/model/UserWaitingForMatch.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/repository/CurrentUserRatingRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/repository/CurrentUserRatingRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/service/MatcherService.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/service/MatcherService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/utils/websocket/UsersWaitingForMatchWebsocketHolder.java" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/java/tsar/alex/utils/websocket/UsersWaitingForMatchWebsocketHolder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/matcher/src/main/resources/sql/matcher_db.sql" beforeDir="false" afterPath="$PROJECT_DIR$/matcher/src/main/resources/sql/matcher_db.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,8 +44,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Enum" />
         <option value="Interface" />
+        <option value="Enum" />
         <option value="Class" />
       </list>
     </option>
@@ -145,7 +138,7 @@
       <recent name="tsar.alex.model" />
     </key>
   </component>
-  <component name="RunManager" selected="Spring Boot.GameMasterApplication">
+  <component name="RunManager" selected="Spring Boot.MatcherApplication">
     <configuration name="Program" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="tsar.alex.Program" />
       <module name="matcher" />
@@ -208,8 +201,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Spring Boot.GameMasterApplication" />
         <item itemvalue="Spring Boot.MatcherApplication" />
+        <item itemvalue="Spring Boot.GameMasterApplication" />
         <item itemvalue="Spring Boot.AuthApplication" />
         <item itemvalue="Application.Program" />
         <item itemvalue="Spring Boot.GameMasterApplication" />
@@ -324,7 +317,14 @@
       <option name="project" value="LOCAL" />
       <updated>1681916379059</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="### Change matchId type ###&#10;1. Change matchId type from sequential number to nano ID string.&#10;2. Add matchId validation and error handling.">
+      <created>1682274180858</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1682274180858</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -383,6 +383,7 @@
     <MESSAGE value="### Basic game-master service implementation (with SSE) ###&#10;1. Partially implement chess game logic with subscription on chess moved based on Server Sent Events (not the best option).&#10;2. Move to using username as id for User class (instead of long id).&#10;3. Replace PostgreSQL by MongoDB in game-master service." />
     <MESSAGE value="Merge GameMaster to Master" />
     <MESSAGE value="Merge Validation to Master" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merge Validation to Master" />
+    <MESSAGE value="### Change matchId type ###&#10;1. Change matchId type from sequential number to nano ID string.&#10;2. Add matchId validation and error handling." />
+    <option name="LAST_COMMIT_MESSAGE" value="### Change matchId type ###&#10;1. Change matchId type from sequential number to nano ID string.&#10;2. Add matchId validation and error handling." />
   </component>
 </project>

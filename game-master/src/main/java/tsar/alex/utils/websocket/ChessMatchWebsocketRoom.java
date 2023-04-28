@@ -30,6 +30,7 @@ public class ChessMatchWebsocketRoom {
     private final Map<String, WebsocketSessionWrapper> usersSubscribedToMatch = new ConcurrentHashMap<>(2);
     private final ScheduledFuture<?>[] timeoutFinishers = new ScheduledFuture[4];
     private final String matchId;
+    private final ChessGameTypeWithTimings gameType;
     private final UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings;
     private boolean finished;
     private int lastMoveNumber = -1;
@@ -81,7 +82,7 @@ public class ChessMatchWebsocketRoom {
         WebsocketSessionWrapper websocketSessionWrapper = usersSubscribedToMatch.get(username);
         ChessMatchInfoResponse response = new ChessMatchInfoResponse(lastMoveNumber,
                                                                     getCurrentUsersOnlineStatusesAndTimings(),
-                                                                    ChessGameConstants.BLITZ_INITIAL_TIME_LEFT_MS,
+                                                                    gameType.getInitialTimeMS(),
                                                                     ChessGameConstants.FIRST_MOVE_TIME_LEFT_MS,
                                                                     ChessGameConstants.LEFT_GAME_TIMEOUT_MS);
 
@@ -111,8 +112,9 @@ public class ChessMatchWebsocketRoom {
         }
 
         if (lastMoveNumber < 1) {
-            whiteTimeLeftMS = ChessGameConstants.BLITZ_INITIAL_TIME_LEFT_MS;
-            blackTimeLeftMS = ChessGameConstants.BLITZ_INITIAL_TIME_LEFT_MS;
+            long initialTime = gameType.getInitialTimeMS();
+            whiteTimeLeftMS = initialTime;
+            blackTimeLeftMS = initialTime;
             long userFirstMoveTimeLeftMS;
 
 

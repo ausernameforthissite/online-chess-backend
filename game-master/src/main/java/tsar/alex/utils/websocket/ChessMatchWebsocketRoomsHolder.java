@@ -48,7 +48,7 @@ public class ChessMatchWebsocketRoomsHolder {
                         - (System.currentTimeMillis() - match.getLastMoveTimeMS());
             }
 
-            ChessMatchWebsocketRoom websocketRoom = addMatchWebsocketRoom(match.getId(), usersInMatch);
+            ChessMatchWebsocketRoom websocketRoom = addMatchWebsocketRoom(match.getId(), match.getGameType(), usersInMatch);
             websocketRoom.reentrantLock.lock();
 
             try {
@@ -67,11 +67,11 @@ public class ChessMatchWebsocketRoomsHolder {
         }
     }
 
-    public ChessMatchWebsocketRoom addMatchWebsocketRoom(String matchId, UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings) {
+    public ChessMatchWebsocketRoom addMatchWebsocketRoom(String matchId, ChessGameTypeWithTimings gameType, UsersInMatchWithOnlineStatusesAndTimings usersInMatchWithOnlineStatusesAndTimings) {
         if (matchWebsocketRooms.containsKey(matchId)) {
             throw new RuntimeException("Room with match id = " + matchId + " already exists!");
         } else {
-            ChessMatchWebsocketRoom websocketRoom = new ChessMatchWebsocketRoom(matchId,
+            ChessMatchWebsocketRoom websocketRoom = new ChessMatchWebsocketRoom(matchId, gameType,
                     usersInMatchWithOnlineStatusesAndTimings,this, objectMapper,
                     messagingTemplate, scheduledExecutorService, matchWebsocketService);
 
@@ -80,8 +80,8 @@ public class ChessMatchWebsocketRoomsHolder {
         }
     }
 
-    public ChessMatchWebsocketRoom addMatchWebsocketRoom(String matchId, UsersInMatch usersInMatch) {
-        return addMatchWebsocketRoom(matchId, new UsersInMatchWithOnlineStatusesAndTimings(usersInMatch));
+    public ChessMatchWebsocketRoom addMatchWebsocketRoom(String matchId, ChessGameTypeWithTimings gameType, UsersInMatch usersInMatch) {
+        return addMatchWebsocketRoom(matchId, gameType, new UsersInMatchWithOnlineStatusesAndTimings(usersInMatch));
     }
 
     public ChessMatchWebsocketRoom getMatchWebsocketRoom(String matchId) {
@@ -91,7 +91,5 @@ public class ChessMatchWebsocketRoomsHolder {
     public ChessMatchWebsocketRoom removeMatchWebsocketRoom(String matchId) {
         return matchWebsocketRooms.remove(matchId);
     }
-
-
 
 }

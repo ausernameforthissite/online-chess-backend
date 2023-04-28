@@ -43,7 +43,9 @@ public class MatcherService {
         if (currentUserRatingRepository.existsByUsername(username)) {
             return new InitializeUserRatingBadResponse(String.format(ALREADY_EXISTS, username));
         } else {
-            currentUserRatingRepository.save(matcherMapper.mapToDefaultCurrentUserRating(username));
+            for (ChessGameType chessGameType : ChessGameType.values()) {
+                currentUserRatingRepository.save(CurrentUserRating.getDefaultUserRating(username, chessGameType));
+            }
             return new InitializeUserRatingOkResponse();
         }
     }
@@ -60,9 +62,9 @@ public class MatcherService {
     }
 
     @Transactional(readOnly = true)
-    public CurrentUserRating getCurrentUserRating(String username) {
-        return currentUserRatingRepository.findById(username).orElseThrow(() ->
-                new DatabaseRecordNotFoundException(String.format(NOT_FOUND_USERNAME, username)));
+    public CurrentUserRating getCurrentUserRating(String username, ChessGameType chessGameType) {
+        return currentUserRatingRepository.findById(new CurrentUserRatingId(username, chessGameType)).orElseThrow(() ->
+                new DatabaseRecordNotFoundException(String.format(NO_USER_RATING, username, chessGameType.name())));
     }
 
     @Transactional(readOnly = true)
@@ -110,6 +112,7 @@ public class MatcherService {
     }
 
     private void updateUsersRatings(ChessMatchUserRatingsRecord matchUserRatingsRecord) {
+        ChessGameType chessGameType = matchUserRatingsRecord.getChessGameType().getGeneralGameType();
         String[] usernames = {matchUserRatingsRecord.getWhiteUsername(), matchUserRatingsRecord.getBlackUsername()};
         int[] initialRatings = {matchUserRatingsRecord.getWhiteInitialRating(),
                 matchUserRatingsRecord.getBlackInitialRating()};
@@ -118,7 +121,7 @@ public class MatcherService {
 
         for (int i = 0; i < 2; i++) {
             currentUserRatings[i] = currentUserRatingRepository
-                    .findById(usernames[i]).orElseThrow(
+                    .findById(new CurrentUserRatingId(usernames[i], chessGameType)).orElseThrow(
                             () -> new RuntimeException("No currentUserRating was found for username = "
                                     + matchUserRatingsRecord.getWhiteUsername()));
 

@@ -29,7 +29,7 @@ public class MatchController {
             return new ResponseEntity<>(new StartMatchBadResponse(Utils.getBindingResultErrorsAsString(bindingResult)),
                     HttpStatus.BAD_REQUEST);
         }
-        StartMatchResponse response = matchService.startMatch(startMatchRequest.getPairOfUsernames());
+        StartMatchResponse response = matchService.startMatch(startMatchRequest);
 
         HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return new ResponseEntity<>(response, httpStatus);

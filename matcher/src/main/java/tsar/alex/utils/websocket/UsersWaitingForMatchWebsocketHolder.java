@@ -1,10 +1,12 @@
 package tsar.alex.utils.websocket;
 
+import static tsar.alex.model.ChessGameTypeWithTimings.*;
 import static tsar.alex.utils.CommonTextConstants.*;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.MessageHeaders;
@@ -44,7 +46,14 @@ public class UsersWaitingForMatchWebsocketHolder {
     private final ScheduledExecutorService scheduledExecutorService;
     private final MatcherService matcherService;
 
-    public void addUserIfPossible(String username, WebsocketSessionWrapper websocketSessionWrapper) {
+    private final Set<ChessGameTypeWithTimings> blitzGames = Stream.of(BLITZ_3_0, BLITZ_3_2)
+            .collect(Collectors.toCollection(HashSet::new));
+    private final Set<ChessGameTypeWithTimings> bulletAndRapidGames = Stream.of(BULLET_1_0, BULLET_1_2, RAPID_10_0, RAPID_10_5)
+            .collect(Collectors.toCollection(HashSet::new));
+    private final Set<ChessGameTypeWithTimings> classicGames = Stream.of(CLASSIC_30_0, CLASSIC_30_30)
+            .collect(Collectors.toCollection(HashSet::new));
+
+    public void addUserIfPossible(String username, ChessGameTypeWithTimings searchGameType, WebsocketSessionWrapper websocketSessionWrapper) {
         WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, true);
 
         try {
@@ -58,14 +67,14 @@ public class UsersWaitingForMatchWebsocketHolder {
         }
 
 
-        CurrentUserRating userRating = matcherService.getCurrentUserRating(username);
+        CurrentUserRating userRating = matcherService.getCurrentUserRating(username, searchGameType.getGeneralGameType());
 
         if (userRating == null) {
-            throw new WebsocketException(String.format(NOT_FOUND_USERNAME, username), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
+            throw new WebsocketException(String.format(NO_USER_RATING, username, searchGameType), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
 
         UserWaitingForMatch UWFM = new UserWaitingForMatch();
-        UWFM.setCurrentUserRating(userRating);
+
         UserWaitingForMatch oldUWFM;
 
         synchronized (UWFMmap) {
@@ -78,7 +87,10 @@ public class UsersWaitingForMatchWebsocketHolder {
                     throw new WebsocketException(ALREADY_SEARCHING, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
                 }
 
-                UWFM.setWaitingForAnswer(oldUWFM.isWaitingForAnswer());
+                UWFM = oldUWFM;
+            } else {
+                UWFM.setCurrentUserRating(userRating);
+                UWFM.setSearchGameType(searchGameType);
             }
 
             ScheduledFuture<?> timeoutFinisher = scheduledExecutorService.schedule(
@@ -185,10 +197,10 @@ public class UsersWaitingForMatchWebsocketHolder {
 
         if (responseAsJSONString.length() < 10) {
             shortMessage = responseAsJSONString;
-        } else if (responseAsJSONString.length() < 25) {
+        } else if (responseAsJSONString.length() < 20) {
             shortMessage = responseAsJSONString.substring(9);
         } else {
-            shortMessage = responseAsJSONString.substring(9, 25);
+            shortMessage = responseAsJSONString.substring(9, 20);
         }
         System.out.println("Sending websocket response " + shortMessage + " to session id " + sessionId);
 
@@ -208,68 +220,88 @@ public class UsersWaitingForMatchWebsocketHolder {
     }
 
 
+    @Scheduled(fixedDelay = 15 * 1000, initialDelay = 15 * 1000)
+    public void pickUpPairsAndInitiateMatchesBlitz() {
+        pickUpPairsAndInitiateMatches(blitzGames);
+    }
+
+    @Scheduled(fixedDelay = 20 * 1000, initialDelay = 20 * 1000)
+    public void pickUpPairsAndInitiateMatchesBulletAndRapid() {
+        pickUpPairsAndInitiateMatches(bulletAndRapidGames);
+    }
+
     @Scheduled(fixedDelay = 30 * 1000, initialDelay = 30 * 1000)
-    public void pickUpPairsAndInitiateMatches() {
+    public void pickUpPairsAndInitiateMatchesClassic() {
+        pickUpPairsAndInitiateMatches(classicGames);
+    }
+
+
+
+    public void pickUpPairsAndInitiateMatches(Set<ChessGameTypeWithTimings> gameTypes) {
         System.out.println("Inside scheduler");
 
-        List<UserWaitingForMatch> UWFMList;
-        UserWaitingForMatch[] UWFMArray;
+        for (ChessGameTypeWithTimings gameType : gameTypes) {
+            List<UserWaitingForMatch> UWFMList;
+            UserWaitingForMatch[] UWFMArray;
 
-        synchronized (UWFMmap) {
-            System.out.println(UWFMmap);
+            synchronized (UWFMmap) {
+                System.out.println(UWFMmap);
 
-            if (UWFMmap.size() < 2) {
-                return;
+                if (UWFMmap.size() < 2) {
+                    return;
+                }
+
+                UWFMList = UWFMmap.values().stream().filter(UWFM -> !UWFM.isWaitingForAnswer() && UWFM.getSearchGameType() == gameType)
+                        .collect(Collectors.toList());
+                int listSize = UWFMList.size();
+
+                if (listSize < 2) {
+                    continue;
+                }
+
+                if (listSize % 2 == 1) {
+                    UWFMList.remove(threadLocalRandom.nextInt(listSize));
+                }
+                UWFMList.forEach(UWFM -> UWFM.setWaitingForAnswer(true));
             }
 
-            UWFMList = UWFMmap.values().stream().filter(UWFM -> !UWFM.isWaitingForAnswer())
-                                                .collect(Collectors.toList());
-            int listSize = UWFMList.size();
+            UWFMArray = UWFMList.toArray(UserWaitingForMatch[]::new);
+            System.out.println(Arrays.toString(UWFMArray));
 
-            if (listSize < 2) {
-                return;
+            Arrays.sort(UWFMArray);
+
+            ExecutorService executorService = Executors.newFixedThreadPool(Math.min(UWFMArray.length / 2, 10));
+
+            for (int i = 0; i < UWFMArray.length; i += 2) {
+                UWFMArray[i].setWaitingForAnswer(true);
+                UWFMArray[i + 1].setWaitingForAnswer(true);
+                executorService.submit(new StartMatchHandler(gameType, new Pair<>(UWFMArray[i], UWFMArray[i+1])));
             }
 
-            if (listSize % 2 == 1) {
-                UWFMList.remove(threadLocalRandom.nextInt(listSize));
-            }
-            UWFMList.forEach(UWFM -> UWFM.setWaitingForAnswer(true));
+            executorService.shutdown();
         }
-
-        UWFMArray = UWFMList.toArray(UserWaitingForMatch[]::new);
-        System.out.println(Arrays.toString(UWFMArray));
-
-        Arrays.sort(UWFMArray);
-
-        ExecutorService executorService = Executors.newFixedThreadPool(Math.min(UWFMArray.length / 2, 5));
-
-        for (int i = 0; i < UWFMArray.length; i += 2) {
-            UWFMArray[i].setWaitingForAnswer(true);
-            UWFMArray[i + 1].setWaitingForAnswer(true);
-            executorService.submit(new StartMatchHandler(new Pair<>(UWFMArray[i], UWFMArray[i+1])));
-        }
-
-        executorService.shutdown();
     }
 
     @AllArgsConstructor
     private class StartMatchHandler implements Runnable {
 
+        private ChessGameTypeWithTimings chessGameType;
         private Pair<UserWaitingForMatch> UWFMPair;
 
         @Override
         public void run() {
             try {
-                StartMatchRequest startMatchRequest = matcherMapper.mapToStartMatchRequest(UWFMPair);
+                StartMatchRequest startMatchRequest = matcherMapper.mapToStartMatchRequest(chessGameType, UWFMPair);
+                System.out.println("Before send");
                 StartMatchResponse response = new RestTemplate().postForObject(
                         "http://localhost:8082/api/match/start", startMatchRequest, StartMatchResponse.class);
-
+                System.out.println("After response");
                 if (response != null) {
                     FindMatchWebsocketResponse websocketResponse;
 
                     if (response instanceof StartMatchOkResponse okResponse) {
                         ChessMatchUserRatingsRecord chessMatchUserRatingsRecord = matcherMapper
-                                .mapToChessMatchUserRatingsRecord(okResponse, UWFMPair);
+                                .mapToChessMatchUserRatingsRecord(okResponse, chessGameType, UWFMPair);
                         matcherService.saveChessMatchUserRatingsRecord(chessMatchUserRatingsRecord);
                         websocketResponse = new FindMatchOkResponse(okResponse.getMatchId());
                     } else {

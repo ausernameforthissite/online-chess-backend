@@ -13,9 +13,6 @@ public class ChessMatchInfoResponse extends ChessMatchWebsocketResponse {
     private long initialFirstMoveTimeLeftMS;
     private long initialReconnectTimeLeftMS;
 
-    public ChessMatchInfoResponse() {
-        super(ChessMatchWebsocketResponseEnum.INFO);
-    }
 
     public ChessMatchInfoResponse(int lastMoveNumber,
                                   CurrentUsersOnlineStatusesAndTimings currentUsersOnlineStatusesAndTimings,

@@ -8,6 +8,7 @@ import javax.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tsar.alex.dto.*;
+import tsar.alex.dto.request.StartMatchRequest;
 import tsar.alex.dto.request.UpdateUsersRatingsRequest;
 import tsar.alex.dto.response.StartMatchBadResponse;
 import tsar.alex.dto.response.StartMatchOkResponse;
@@ -50,8 +51,10 @@ public class MatchService {
     private final MatchRepository matchRepository;
 
 
-    public StartMatchResponse startMatch(Pair<String> usernames) {
+    public StartMatchResponse startMatch(StartMatchRequest startMatchRequest) {
 
+        ChessGameTypeWithTimings gameType = startMatchRequest.getChessGameTypeWithTimings();
+        Pair<String> usernames = startMatchRequest.getPairOfUsernames();
         String errorMessage = checkUsersToStartMatch(usernames);
 
         if (errorMessage.length() > 0) {
@@ -75,6 +78,7 @@ public class MatchService {
         initialChessPositionsRecord.handleNewChessPosition(-1, initialBoardState);
 
         Match match = Match.builder()
+                .gameType(gameType)
                 .startedAt(Instant.now())
                 .usersInMatch(usersInMatch)
                 .boardState(initialBoardState)
@@ -83,7 +87,7 @@ public class MatchService {
                 .build();
 
         String matchId = matchRepository.save(match).getId();
-        ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.addMatchWebsocketRoom(matchId,
+        ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.addMatchWebsocketRoom(matchId, gameType,
                                                                                                 usersInMatch);
         matchWebsocketRoom.reentrantLock.lock();
 
@@ -205,10 +209,12 @@ public class MatchService {
             checkIfChessPositionIsChangedIrreversibly(match, chessMove);
 
             ChessColor enemyColor = ChessColor.getInvertedColor(currentTurnUserColor);
-            updateTimeLeftAndLastMoveTime(match, chessMove, currentMoveNumber, currentTurnUserColor, enemyColor);
 
             boolean finished = checkIfMatchIsFinished(match, chessMove, currentMoveNumber, currentTurnUserColor,
                                                         enemyColor);
+
+            updateTimeLeftAndLastMoveTime(match, finished, chessMove, currentMoveNumber, currentTurnUserColor, enemyColor);
+
             match.getChessMovesRecord().add(chessMove);
             match.setFinished(finished);
 
@@ -236,9 +242,9 @@ public class MatchService {
         }
     }
 
-    private void updateTimeLeftAndLastMoveTime(Match match, ChessMove chessMove, int currentMoveNumber,
+    private void updateTimeLeftAndLastMoveTime(Match match, boolean finished, ChessMove chessMove, int currentMoveNumber,
                                                ChessColor currentTurnUserColor, ChessColor enemyColor) {
-        TimeLefts timelefts = ChessGameUtils.calculateTimeLefts(match, currentMoveNumber, currentTurnUserColor,
+        TimeLefts timelefts = ChessGameUtils.calculateTimeLefts(match, finished, currentMoveNumber, currentTurnUserColor,
                 enemyColor);
         match.setLastMoveTimeMS(timelefts.getThisMoveTime());
         chessMove.setTimeLeftByUserColor(currentTurnUserColor, timelefts.getNewTimeLeft());

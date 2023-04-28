@@ -16,9 +16,11 @@ public class CommonTextConstants {
     public static final String MATCH_ID_NOT_FOUND = "No rating record was found for match with matchId: %s";
     public static final String MATCH_ID_NULL = "matchId must not be null.";
     public static final String NO_MATCH_ID_HEADER = "No Match-Id header.";
-    public static final String NOT_FOUND_USERNAME = "No rating was found for user with username=%s.";
+    public static final String NO_USER_RATING = "No rating was found for username=%s and chessGameType=%s.";
     public static final String NO_AUTHORIZATION_HEADER = "No X-Authorization header was found.";
+    public static final String NO_GAME_TYPE_HEADER = "No GameType header was found.";
     public static final String UNAUTHORIZED = "Unauthorized.";
+    public static final String INCORRECT_GAME_TYPE = "Incorrect ChessGameType value.";
     public static final String NO_ACTIVE_SESSION = "No active websocket session with sessionId=%s was found.";
     public static final String CANNOT_UNSUBSCRIBE = "User with username=%s and sessionId=%s tried to unsubscribe ChessMatch.";
     public static final String NOT_SUBSCRIBED = "You are not subscribed to match with matchId=%s.";

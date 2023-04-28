@@ -103,26 +103,29 @@ public class ChessGameUtils {
     public static void setTimeLeftsToMatchResult(ChessMatchResult matchResult, Match match, int currentMoveNumber) {
         ChessColor currentTurnUserColor = getUserColorByMoveNumber(currentMoveNumber);
         ChessColor enemyColor = ChessColor.getInvertedColor(currentTurnUserColor);
-        TimeLefts timeLefts = calculateTimeLefts(match, currentMoveNumber, currentTurnUserColor,
+        TimeLefts timeLefts = calculateTimeLefts(match, true, currentMoveNumber, currentTurnUserColor,
                 enemyColor);
 
         matchResult.setTimeLeftByUserColor(currentTurnUserColor, timeLefts.getNewTimeLeft());
         matchResult.setTimeLeftByUserColor(enemyColor, timeLefts.getEnemyTimeLeft());
     }
 
-    public static TimeLefts calculateTimeLefts(Match match, int currentMoveNumber,
+    public static TimeLefts calculateTimeLefts(Match match, boolean finished, int currentMoveNumber,
                                                ChessColor currentTurnUserColor, ChessColor enemyColor) {
+        ChessGameTypeWithTimings gameType = match.getGameType();
         long newTimeLeft;
         long enemyTimeLeft;
         long thisMoveTime = System.currentTimeMillis();
 
         if (currentMoveNumber < 2) {
-            newTimeLeft = ChessGameConstants.BLITZ_INITIAL_TIME_LEFT_MS;
-            enemyTimeLeft = ChessGameConstants.BLITZ_INITIAL_TIME_LEFT_MS;
+            long initialTime = gameType.getInitialTimeMS();
+            newTimeLeft = initialTime;
+            enemyTimeLeft = initialTime;
         } else {
+            long timeIncrement = finished ? 0 : gameType.getTimeIncrementMS();
             ChessMove prevMove = match.getChessMovesRecord().get(currentMoveNumber - 1);
             long timeLeft = prevMove.getTimeLeftByUserColor(currentTurnUserColor);
-            newTimeLeft = timeLeft - (thisMoveTime - match.getLastMoveTimeMS());
+            newTimeLeft = timeLeft - (thisMoveTime - match.getLastMoveTimeMS()) + timeIncrement;
             newTimeLeft = newTimeLeft < 0 ? 0 : newTimeLeft;
             enemyTimeLeft = prevMove.getTimeLeftByUserColor(enemyColor);
         }

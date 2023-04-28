@@ -3,7 +3,7 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.43">
     <root id="1">
       <DateStyle>dmy</DateStyle>
-      <IntrospectionStateNumber>3912</IntrospectionStateNumber>
+      <IntrospectionStateNumber>3978</IntrospectionStateNumber>
       <ServerVersion>15.1</ServerVersion>
       <StartupTime>1681707022</StartupTime>
       <TimeZones>true ACDT
@@ -47,14 +47,14 @@ false Africa/Blantyre
 false Africa/Brazzaville
 false Africa/Bujumbura
 false Africa/Cairo
-true Africa/Casablanca
+false Africa/Casablanca
 true Africa/Ceuta
 false Africa/Conakry
 false Africa/Dakar
 false Africa/Dar_es_Salaam
 false Africa/Djibouti
 false Africa/Douala
-true Africa/El_Aaiun
+false Africa/El_Aaiun
 false Africa/Freetown
 false Africa/Gaborone
 false Africa/Harare
@@ -803,14 +803,14 @@ false posix/Africa/Blantyre
 false posix/Africa/Brazzaville
 false posix/Africa/Bujumbura
 false posix/Africa/Cairo
-true posix/Africa/Casablanca
+false posix/Africa/Casablanca
 true posix/Africa/Ceuta
 false posix/Africa/Conakry
 false posix/Africa/Dakar
 false posix/Africa/Dar_es_Salaam
 false posix/Africa/Djibouti
 false posix/Africa/Douala
-true posix/Africa/El_Aaiun
+false posix/Africa/El_Aaiun
 false posix/Africa/Freetown
 false posix/Africa/Gaborone
 false posix/Africa/Harare
@@ -1408,7 +1408,7 @@ true posixrules
 13226||10|C|G
 13226||-9223372036854775808|U|G
 13226||10|U|G</Grants>
-      <IntrospectionStateNumber>3912</IntrospectionStateNumber>
+      <IntrospectionStateNumber>3978</IntrospectionStateNumber>
       <ObjectId>24641</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4826,169 +4826,187 @@ true posixrules
     <schema id="265" parent="4" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>3912</IntrospectionStateNumber>
+      <IntrospectionStateNumber>3978</IntrospectionStateNumber>
       <ObjectId>2200</ObjectId>
       <StateNumber>517</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
     </schema>
     <table id="266" parent="265" name="chess_match_user_ratings_record">
-      <ObjectId>57444</ObjectId>
-      <StateNumber>3911</StateNumber>
+      <ObjectId>57484</ObjectId>
+      <StateNumber>3977</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>postgres</OwnerName>
     </table>
     <table id="267" parent="265" name="current_user_rating">
-      <ObjectId>49247</ObjectId>
-      <StateNumber>2786</StateNumber>
+      <ObjectId>57477</ObjectId>
+      <StateNumber>3976</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>postgres</OwnerName>
     </table>
     <column id="268" parent="266" name="match_id">
-      <DataType>varchar(50)|0s</DataType>
+      <DataType>varchar|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <StateNumber>3911</StateNumber>
+      <StateNumber>3977</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="269" parent="266" name="started_at">
-      <DataType>timestamp with time zone|0s</DataType>
+    <column id="269" parent="266" name="chess_game_type">
+      <DataType>varchar|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>1184</TypeId>
+      <StateNumber>3977</StateNumber>
+      <TypeId>1043</TypeId>
     </column>
-    <column id="270" parent="266" name="finished">
-      <DataType>boolean|0s</DataType>
+    <column id="270" parent="266" name="started_at">
+      <DataType>timestamp with time zone|0s</DataType>
       <NotNull>1</NotNull>
       <Position>3</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>16</TypeId>
+      <StateNumber>3977</StateNumber>
+      <TypeId>1184</TypeId>
     </column>
-    <column id="271" parent="266" name="white_username">
-      <DataType>varchar(50)|0s</DataType>
-      <NotNull>1</NotNull>
-      <Position>4</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>1043</TypeId>
-    </column>
-    <column id="272" parent="266" name="white_initial_rating">
-      <DataType>integer|0s</DataType>
-      <NotNull>1</NotNull>
-      <Position>5</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>23</TypeId>
-    </column>
-    <column id="273" parent="266" name="white_rating_change">
-      <DataType>integer|0s</DataType>
-      <Position>6</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>23</TypeId>
-    </column>
-    <column id="274" parent="266" name="black_username">
-      <DataType>varchar(50)|0s</DataType>
-      <NotNull>1</NotNull>
-      <Position>7</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>1043</TypeId>
-    </column>
-    <column id="275" parent="266" name="black_initial_rating">
-      <DataType>integer|0s</DataType>
-      <NotNull>1</NotNull>
-      <Position>8</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>23</TypeId>
-    </column>
-    <column id="276" parent="266" name="black_rating_change">
-      <DataType>integer|0s</DataType>
-      <Position>9</Position>
-      <StateNumber>3911</StateNumber>
-      <TypeId>23</TypeId>
-    </column>
-    <column id="277" parent="266" name="technical_finish">
+    <column id="271" parent="266" name="finished">
       <DataType>boolean|0s</DataType>
       <NotNull>1</NotNull>
-      <Position>10</Position>
-      <StateNumber>3911</StateNumber>
+      <Position>4</Position>
+      <StateNumber>3977</StateNumber>
       <TypeId>16</TypeId>
     </column>
-    <column id="278" parent="266" name="draw">
+    <column id="272" parent="266" name="white_username">
+      <DataType>varchar|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StateNumber>3977</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="273" parent="266" name="white_initial_rating">
+      <DataType>integer|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StateNumber>3977</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="274" parent="266" name="white_rating_change">
+      <DataType>integer|0s</DataType>
+      <Position>7</Position>
+      <StateNumber>3977</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="275" parent="266" name="black_username">
+      <DataType>varchar|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>8</Position>
+      <StateNumber>3977</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="276" parent="266" name="black_initial_rating">
+      <DataType>integer|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>9</Position>
+      <StateNumber>3977</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="277" parent="266" name="black_rating_change">
+      <DataType>integer|0s</DataType>
+      <Position>10</Position>
+      <StateNumber>3977</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="278" parent="266" name="technical_finish">
       <DataType>boolean|0s</DataType>
       <NotNull>1</NotNull>
       <Position>11</Position>
-      <StateNumber>3911</StateNumber>
+      <StateNumber>3977</StateNumber>
       <TypeId>16</TypeId>
     </column>
-    <column id="279" parent="266" name="winner_color">
-      <DataType>varchar(50)|0s</DataType>
+    <column id="279" parent="266" name="draw">
+      <DataType>boolean|0s</DataType>
+      <NotNull>1</NotNull>
       <Position>12</Position>
-      <StateNumber>3911</StateNumber>
+      <StateNumber>3977</StateNumber>
+      <TypeId>16</TypeId>
+    </column>
+    <column id="280" parent="266" name="winner_color">
+      <DataType>varchar|0s</DataType>
+      <Position>13</Position>
+      <StateNumber>3977</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <index id="280" parent="266" name="chess_match_user_ratings_record_pkey">
+    <index id="281" parent="266" name="chess_match_user_ratings_record_pkey">
       <ColNames>match_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>57447</ObjectId>
+      <ObjectId>57489</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>3911</StateNumber>
+      <StateNumber>3977</StateNumber>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
       <CollationNames>default</CollationNames>
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <key id="281" parent="266" name="chess_match_user_ratings_record_pkey">
+    <key id="282" parent="266" name="chess_match_user_ratings_record_pkey">
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>57448</ObjectId>
+      <ObjectId>57490</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>3911</StateNumber>
-      <UnderlyingIndexId>57447</UnderlyingIndexId>
+      <StateNumber>3977</StateNumber>
+      <UnderlyingIndexId>57489</UnderlyingIndexId>
     </key>
-    <column id="282" parent="267" name="username">
-      <DataType>varchar(50)|0s</DataType>
+    <column id="283" parent="267" name="username">
+      <DataType>varchar|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <StateNumber>2786</StateNumber>
+      <StateNumber>3976</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="283" parent="267" name="rating">
-      <DataType>integer|0s</DataType>
+    <column id="284" parent="267" name="chess_game_type">
+      <DataType>varchar|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
-      <StateNumber>2786</StateNumber>
-      <TypeId>23</TypeId>
+      <StateNumber>3976</StateNumber>
+      <TypeId>1043</TypeId>
     </column>
-    <column id="284" parent="267" name="matches_played">
+    <column id="285" parent="267" name="rating">
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
       <Position>3</Position>
-      <StateNumber>2786</StateNumber>
+      <StateNumber>3976</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="285" parent="267" name="k">
+    <column id="286" parent="267" name="matches_played">
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
       <Position>4</Position>
-      <StateNumber>2786</StateNumber>
+      <StateNumber>3976</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <index id="286" parent="267" name="current_user_rating_pkey">
-      <ColNames>username</ColNames>
+    <column id="287" parent="267" name="k">
+      <DataType>integer|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StateNumber>3976</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <index id="288" parent="267" name="current_user_rating_pkey">
+      <ColNames>username
+chess_game_type</ColNames>
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>49250</ObjectId>
+      <ObjectId>57482</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>2786</StateNumber>
+      <StateNumber>3976</StateNumber>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
-      <CollationNames>default</CollationNames>
-      <CollationIds>100</CollationIds>
-      <CollationParentNames>pg_catalog</CollationParentNames>
+      <CollationIds>100
+100</CollationIds>
+      <CollationNames>default
+default</CollationNames>
+      <CollationParentNames>pg_catalog
+pg_catalog</CollationParentNames>
     </index>
-    <key id="287" parent="267" name="current_user_rating_pkey">
+    <key id="289" parent="267" name="current_user_rating_pkey">
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>49251</ObjectId>
+      <ObjectId>57483</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>2786</StateNumber>
-      <UnderlyingIndexId>49250</UnderlyingIndexId>
+      <StateNumber>3976</StateNumber>
+      <UnderlyingIndexId>57482</UnderlyingIndexId>
     </key>
   </database-model>
 </dataSource>

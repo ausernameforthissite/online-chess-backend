@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class UserWaitingForMatch implements Comparable<UserWaitingForMatch> {
 
     private boolean waitingForAnswer;
+    private ChessGameTypeWithTimings searchGameType;
     private WebsocketSessionWrapper sessionWrapper;
     private CurrentUserRating currentUserRating;
 
@@ -70,6 +71,23 @@ public class UserWaitingForMatch implements Comparable<UserWaitingForMatch> {
         }
     }
 
+    public ChessGameTypeWithTimings getSearchGameType() {
+        readLock.lock();
+        try {
+            return searchGameType;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public void setSearchGameType(ChessGameTypeWithTimings searchGameType) {
+        writeLock.lock();
+        try {
+            this.searchGameType = searchGameType;
+        } finally {
+            writeLock.unlock();
+        }
+    }
 
     @Override
     public int compareTo(UserWaitingForMatch o) {

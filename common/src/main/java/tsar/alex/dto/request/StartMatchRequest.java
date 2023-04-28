@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import tsar.alex.model.ChessGameTypeWithTimings;
 import tsar.alex.model.Pair;
 
 @Getter
@@ -14,6 +15,10 @@ import tsar.alex.model.Pair;
 @NoArgsConstructor
 @ToString
 public class StartMatchRequest {
+
+    @NotNull
+    private ChessGameTypeWithTimings chessGameTypeWithTimings;
+
     @NotNull
     private Pair<String> pairOfUsernames;
 }

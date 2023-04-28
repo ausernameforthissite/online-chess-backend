@@ -4,27 +4,22 @@ import org.mapstruct.Mapper;
 import tsar.alex.dto.response.StartMatchOkResponse;
 import tsar.alex.dto.request.StartMatchRequest;
 import tsar.alex.dto.response.UsersRatingsDataForMatchOkResponse;
+import tsar.alex.model.ChessGameTypeWithTimings;
 import tsar.alex.model.ChessMatchUserRatingsRecord;
 import tsar.alex.model.Pair;
 import tsar.alex.model.CurrentUserRating;
 import tsar.alex.model.UserWaitingForMatch;
-import tsar.alex.utils.EloRating;
 
 @Mapper(componentModel = "spring")
 public interface MatcherMapper {
 
 
-    default CurrentUserRating mapToDefaultCurrentUserRating(String username) {
-        return new CurrentUserRating(username, EloRating.DEFAULT_USER_RATING, 0, EloRating.K_VALUES[0]);
-    }
-
-
-    default StartMatchRequest mapToStartMatchRequest(Pair<UserWaitingForMatch> UWFMPair) {
-        return new StartMatchRequest(new Pair<>(UWFMPair.get(0).getCurrentUserRating().getUsername(),
+    default StartMatchRequest mapToStartMatchRequest(ChessGameTypeWithTimings chessGameTypeWithTimings, Pair<UserWaitingForMatch> UWFMPair) {
+        return new StartMatchRequest(chessGameTypeWithTimings, new Pair<>(UWFMPair.get(0).getCurrentUserRating().getUsername(),
                                         UWFMPair.get(1).getCurrentUserRating().getUsername()));
     }
 
-    default ChessMatchUserRatingsRecord mapToChessMatchUserRatingsRecord(StartMatchOkResponse response,
+    default ChessMatchUserRatingsRecord mapToChessMatchUserRatingsRecord(StartMatchOkResponse response, ChessGameTypeWithTimings chessGameType,
                                                                          Pair<UserWaitingForMatch> UWFMPair) {
         CurrentUserRating whitePlayer;
         CurrentUserRating blackPlayer;
@@ -39,6 +34,7 @@ public interface MatcherMapper {
 
         return ChessMatchUserRatingsRecord.builder()
                 .matchId(response.getMatchId())
+                .chessGameType(chessGameType)
                 .startedAt(response.getStartedAt())
                 .finished(false)
                 .whiteUsername(whitePlayer.getUsername()).whiteInitialRating(whitePlayer.getRating())
@@ -63,6 +59,5 @@ public interface MatcherMapper {
 
         return okResponse;
     }
-
 
 }

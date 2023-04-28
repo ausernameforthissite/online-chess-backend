@@ -17,6 +17,7 @@ public class Match {
 
     @Id
     private String id;
+    private ChessGameTypeWithTimings gameType;
     private Instant startedAt;
     private long lastMoveTimeMS;
     private boolean finished;
