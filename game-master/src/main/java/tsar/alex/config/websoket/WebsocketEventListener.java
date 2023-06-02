@@ -7,19 +7,18 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import tsar.alex.model.WebsocketSessionMap;
 import tsar.alex.model.WebsocketSessionWrapper;
 import tsar.alex.utils.WebsocketCommonUtils;
-import tsar.alex.utils.websocket.ChessMatchWebsocketRoom;
-import tsar.alex.utils.websocket.ChessMatchWebsocketRoomsHolder;
-
-import java.util.Map;
+import tsar.alex.api.websocket.ChessGameWebsocketRoom;
+import tsar.alex.api.websocket.ChessGameWebsocketRoomsHolder;
 
 @Component
 @AllArgsConstructor
 public class WebsocketEventListener {
 
-    private final Map<String, WebsocketSessionWrapper> websocketSessions;
-    private final ChessMatchWebsocketRoomsHolder chessMatchWebsocketRoomsHolder;
+    private final WebsocketSessionMap websocketSessions;
+    private final ChessGameWebsocketRoomsHolder chessGameWebsocketRoomsHolder;
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
@@ -34,23 +33,23 @@ public class WebsocketEventListener {
             return;
         }
 
-        WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, false);
+        WebsocketCommonUtils.cancelOldTimeoutDisconnectTask(websocketSessionWrapper, false);
 
         AbstractAuthenticationToken authentication = (AbstractAuthenticationToken) accessor.getUser();
 
-        String matchId = (String) authentication.getDetails();
-        ChessMatchWebsocketRoom matchWebsocketRoom = chessMatchWebsocketRoomsHolder.getMatchWebsocketRoom(matchId);
+        String gameId = (String) authentication.getDetails();
+        ChessGameWebsocketRoom gameWebsocketRoom = chessGameWebsocketRoomsHolder.getGameWebsocketRoom(gameId);
 
-        if (matchWebsocketRoom == null) {
+        if (gameWebsocketRoom == null) {
             return;
         }
-        matchWebsocketRoom.reentrantLock.lock();
+        gameWebsocketRoom.reentrantLock.lock();
 
         try {
             String username = authentication.getName();
-            matchWebsocketRoom.removeDisconnectedUser(username, sessionId);
+            gameWebsocketRoom.removeDisconnectedUser(username, sessionId);
         } finally {
-            matchWebsocketRoom.reentrantLock.unlock();
+            gameWebsocketRoom.reentrantLock.unlock();
         }
 
     }

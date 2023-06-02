@@ -18,10 +18,10 @@ import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 import tsar.alex.config.websocket.CustomErrorHandler;
 import tsar.alex.model.WebsocketSessionWrapper;
+import tsar.alex.model.WebsocketSessionMap;
 import tsar.alex.utils.Constants;
 import tsar.alex.utils.TimeoutWebsocketCloseHandler;
 
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -32,10 +32,12 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    private static final long WEBSOCKET_SESSION_IDLE_TIMEOUT_MS = 50_000;
+    private static final long SERVER_HEARTBEAT_INTERVAL_MS = 10_000;
+    private static final long CLIENT_HEARTBEAT_INTERVAL_MS = 0;
+
     private final ScheduledExecutorService scheduledExecutorService;
-
-    private final Map<String, WebsocketSessionWrapper> websocketSessions;
-
+    private final WebsocketSessionMap websocketSessions;
     private TaskScheduler messageBrokerTaskScheduler;
 
     @Autowired
@@ -47,7 +49,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Bean
     public ServletServerContainerFactoryBean createWebSocketContainer() {
         ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-        container.setMaxSessionIdleTimeout(50_000L);
+        container.setMaxSessionIdleTimeout(WEBSOCKET_SESSION_IDLE_TIMEOUT_MS);
         return container;
     }
 
@@ -63,11 +65,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                         System.out.println("After connection");
                         System.out.println("Session id = " + session.getId());
-                        ScheduledFuture<?> timeoutFinisher = scheduledExecutorService.schedule(
+                        ScheduledFuture<?> timeoutDisconnectTask = scheduledExecutorService.schedule(
                                 new TimeoutWebsocketCloseHandler(session),
                                 Constants.NOT_SUBSCRIBED_SESSION_TIMEOUT_MS,
                                 TimeUnit.MILLISECONDS);
-                        websocketSessions.put(session.getId(), new WebsocketSessionWrapper(session, timeoutFinisher));
+                        websocketSessions.put(session.getId(),
+                                new WebsocketSessionWrapper(session, timeoutDisconnectTask));
 
                         super.afterConnectionEstablished(session);
                     }
@@ -80,7 +83,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic", "/queue")
-                .setHeartbeatValue(new long[] {10000, 0})
+                .setHeartbeatValue(new long[]{SERVER_HEARTBEAT_INTERVAL_MS, CLIENT_HEARTBEAT_INTERVAL_MS})
                 .setTaskScheduler(this.messageBrokerTaskScheduler);
         config.setApplicationDestinationPrefixes("/ws");
 

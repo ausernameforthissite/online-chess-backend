@@ -1,7 +1,7 @@
 package tsar.alex.utils;
 
 import static tsar.alex.utils.CommonTextConstants.*;
-import static tsar.alex.utils.Constants.MATCH_ID_REGEX;
+import static tsar.alex.utils.Constants.GAME_ID_REGEX;
 
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -44,12 +44,12 @@ public class Utils {
         return errorMsg.toString();
     }
 
-    public static String validateMatchId(String matchId) {
-        if (matchId == null) {
-            return MATCH_ID_NULL;
+    public static String validateGameId(String gameId) {
+        if (gameId == null) {
+            return GAME_ID_NULL;
         }
-        if (!Pattern.matches(MATCH_ID_REGEX, matchId)) {
-            return INCORRECT_MATCH_ID;
+        if (!Pattern.matches(GAME_ID_REGEX, gameId)) {
+            return INCORRECT_GAME_ID;
         }
         return null;
     }

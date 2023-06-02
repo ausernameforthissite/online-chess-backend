@@ -21,7 +21,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/ws/**").permitAll()
-                .antMatchers("/api/match/{\\d+}/ratings").permitAll()
+                .antMatchers("/api/game/{\\w+}/ratings").permitAll()
                 .antMatchers("/api/initialize_user_rating").hasIpAddress("127.0.0.1")
                 .antMatchers("/api/update_users_ratings").hasIpAddress("127.0.0.1")
                 .anyRequest().authenticated()

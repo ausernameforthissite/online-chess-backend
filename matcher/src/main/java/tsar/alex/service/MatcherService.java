@@ -10,16 +10,16 @@ import tsar.alex.dto.request.UpdateUsersRatingsRequest;
 import tsar.alex.dto.response.InitializeUserRatingBadResponse;
 import tsar.alex.dto.response.InitializeUserRatingOkResponse;
 import tsar.alex.dto.response.InitializeUserRatingResponse;
-import tsar.alex.dto.response.UserInMatchStatusFalseResponse;
-import tsar.alex.dto.response.UserInMatchStatusResponse;
-import tsar.alex.dto.response.UserInMatchStatusTrueResponse;
-import tsar.alex.dto.response.UsersRatingsDataForMatchBadResponse;
-import tsar.alex.dto.response.UsersRatingsDataForMatchResponse;
+import tsar.alex.dto.response.UserInGameStatusFalseResponse;
+import tsar.alex.dto.response.UserInGameStatusResponse;
+import tsar.alex.dto.response.UserInGameStatusTrueResponse;
+import tsar.alex.dto.response.UsersRatingsDataForGameBadResponse;
+import tsar.alex.dto.response.UsersRatingsDataForGameResponse;
 import tsar.alex.exception.DatabaseRecordNotFoundException;
 import tsar.alex.exception.UnexpectedDatabaseResultException;
 import tsar.alex.mapper.MatcherMapper;
 import tsar.alex.model.*;
-import tsar.alex.repository.ChessMatchUserRatingsRecordRepository;
+import tsar.alex.repository.ChessGameUserRatingsRecordRepository;
 import tsar.alex.repository.CurrentUserRatingRepository;
 import tsar.alex.utils.EloRating;
 
@@ -34,7 +34,7 @@ public class MatcherService {
 
 
     private final CurrentUserRatingRepository currentUserRatingRepository;
-    private final ChessMatchUserRatingsRecordRepository chessMatchUserRatingsRecordRepository;
+    private final ChessGameUserRatingsRecordRepository chessGameUserRatingsRecordRepository;
 
     private final MatcherMapper matcherMapper;
 
@@ -51,13 +51,13 @@ public class MatcherService {
     }
 
     @Transactional(readOnly = true)
-    public UserInMatchStatusResponse getUserInMatchStatus() {
-        List<ChessMatchUserRatingsRecord> activeMatches = findActiveMatchesRecordsByUsername(MatcherUtils.getCurrentUsername());
+    public UserInGameStatusResponse getUserInGameStatus() {
+        List<ChessGameUserRatingsRecord> activeGames = findActiveGamesRecordsByUsername(MatcherUtils.getCurrentUsername());
 
-        if (activeMatches == null || activeMatches.size() == 0) {
-            return new UserInMatchStatusFalseResponse();
+        if (activeGames == null || activeGames.size() == 0) {
+            return new UserInGameStatusFalseResponse();
         } else {
-            return new UserInMatchStatusTrueResponse(activeMatches.get(0).getMatchId());
+            return new UserInGameStatusTrueResponse(activeGames.get(0).getGameId());
         }
     }
 
@@ -68,54 +68,54 @@ public class MatcherService {
     }
 
     @Transactional(readOnly = true)
-    public UsersRatingsDataForMatchResponse getUsersRatingsDataByMatchId(String matchId) {
-        Optional<ChessMatchUserRatingsRecord> matchUserRatingsRecordOptional = chessMatchUserRatingsRecordRepository
-                .findById(matchId);
-        if (matchUserRatingsRecordOptional.isEmpty()) {
-            return new UsersRatingsDataForMatchBadResponse(String.format(MATCH_ID_NOT_FOUND, matchId));
+    public UsersRatingsDataForGameResponse getUsersRatingsDataByGameId(String gameId) {
+        Optional<ChessGameUserRatingsRecord> gameUserRatingsRecordOptional = chessGameUserRatingsRecordRepository
+                .findById(gameId);
+        if (gameUserRatingsRecordOptional.isEmpty()) {
+            return new UsersRatingsDataForGameBadResponse(String.format(GAME_ID_NOT_FOUND, gameId));
         }
 
-        return matcherMapper.mapToUsersRatingsDataForMatchOkResponse(matchUserRatingsRecordOptional.get());
+        return matcherMapper.mapToUsersRatingsDataForGameOkResponse(gameUserRatingsRecordOptional.get());
     }
 
     @Transactional(readOnly = true)
-    public List<ChessMatchUserRatingsRecord> findActiveMatchesRecordsByUsername(String username) {
-        List<ChessMatchUserRatingsRecord> activeMatches = chessMatchUserRatingsRecordRepository
-                                                            .findRecordsOfActiveMatchesByUsername(username);
+    public List<ChessGameUserRatingsRecord> findActiveGamesRecordsByUsername(String username) {
+        List<ChessGameUserRatingsRecord> activeGames = chessGameUserRatingsRecordRepository
+                                                            .findRecordsOfActiveGamesByUsername(username);
 
-        if (activeMatches != null && activeMatches.size() > 1) {
-            throw new UnexpectedDatabaseResultException(String.format(SEVERAL_ACTIVE_MATCHES, username));
+        if (activeGames != null && activeGames.size() > 1) {
+            throw new UnexpectedDatabaseResultException(String.format(SEVERAL_ACTIVE_GAMES, username));
         }
 
-        return activeMatches;
+        return activeGames;
     }
 
-    public void saveChessMatchUserRatingsRecord(ChessMatchUserRatingsRecord chessMatchUserRatingsRecord) {
-        chessMatchUserRatingsRecordRepository.save(chessMatchUserRatingsRecord);
+    public void saveChessGameUserRatingsRecord(ChessGameUserRatingsRecord chessGameUserRatingsRecord) {
+        chessGameUserRatingsRecordRepository.save(chessGameUserRatingsRecord);
     }
 
-    public void updateAfterMatchFinished(UpdateUsersRatingsRequest request) {
-        String matchId = request.getMatchId();
-        ChessMatchUserRatingsRecord matchUserRatingsRecord = chessMatchUserRatingsRecordRepository
-                .findById(matchId).orElseThrow(() -> new RuntimeException(String.format(MATCH_ID_NOT_FOUND, matchId)));
+    public void updateAfterGameFinished(UpdateUsersRatingsRequest request) {
+        String gameId = request.getGameId();
+        ChessGameUserRatingsRecord gameUserRatingsRecord = chessGameUserRatingsRecordRepository
+                .findById(gameId).orElseThrow(() -> new RuntimeException(String.format(GAME_ID_NOT_FOUND, gameId)));
 
-        matchUserRatingsRecord.setFinished(true);
+        gameUserRatingsRecord.setFinished(true);
 
         if (request.isTechnicalFinish()) {
-            matchUserRatingsRecord.setTechnicalFinish(true);
+            gameUserRatingsRecord.setTechnicalFinish(true);
             return;
         }
 
-        matchUserRatingsRecord.setDraw(request.isDraw());
-        matchUserRatingsRecord.setWinnerColor(request.getWinnerColor());
-        updateUsersRatings(matchUserRatingsRecord);
+        gameUserRatingsRecord.setDraw(request.isDraw());
+        gameUserRatingsRecord.setWinnerColor(request.getWinnerColor());
+        updateUsersRatings(gameUserRatingsRecord);
     }
 
-    private void updateUsersRatings(ChessMatchUserRatingsRecord matchUserRatingsRecord) {
-        ChessGameType chessGameType = matchUserRatingsRecord.getChessGameType().getGeneralGameType();
-        String[] usernames = {matchUserRatingsRecord.getWhiteUsername(), matchUserRatingsRecord.getBlackUsername()};
-        int[] initialRatings = {matchUserRatingsRecord.getWhiteInitialRating(),
-                matchUserRatingsRecord.getBlackInitialRating()};
+    private void updateUsersRatings(ChessGameUserRatingsRecord gameUserRatingsRecord) {
+        ChessGameType chessGameType = gameUserRatingsRecord.getChessGameType().getGeneralGameType();
+        String[] usernames = {gameUserRatingsRecord.getWhiteUsername(), gameUserRatingsRecord.getBlackUsername()};
+        int[] initialRatings = {gameUserRatingsRecord.getWhiteInitialRating(),
+                gameUserRatingsRecord.getBlackInitialRating()};
 
         CurrentUserRating[] currentUserRatings = new CurrentUserRating[2];
 
@@ -123,34 +123,34 @@ public class MatcherService {
             currentUserRatings[i] = currentUserRatingRepository
                     .findById(new CurrentUserRatingId(usernames[i], chessGameType)).orElseThrow(
                             () -> new RuntimeException("No currentUserRating was found for username = "
-                                    + matchUserRatingsRecord.getWhiteUsername()));
+                                    + gameUserRatingsRecord.getWhiteUsername()));
 
-            if (currentUserRatings[i].getRating() != matchUserRatingsRecord.getInitialRatingByUserColorIndexNumber(i)) {
+            if (currentUserRatings[i].getRating() != gameUserRatingsRecord.getInitialRatingByUserColorIndexNumber(i)) {
                 throw new RuntimeException("Initial user ratings in CurrentUserRating ("
-                        + currentUserRatings[i].getRating() + ") and in matchUserRatingsRecord ("
-                        + matchUserRatingsRecord.getInitialRatingByUserColorIndexNumber(i) + ") for match with id = "
-                        + matchUserRatingsRecord.getMatchId() + "  are not equal!");
+                        + currentUserRatings[i].getRating() + ") and in gameUserRatingsRecord ("
+                        + gameUserRatingsRecord.getInitialRatingByUserColorIndexNumber(i) + ") for game with gameId = "
+                        + gameUserRatingsRecord.getGameId() + "  are not equal!");
             }
         }
 
-        PersonalMatchResultEnum[] personalMatchResults = new PersonalMatchResultEnum[2];
+        PersonalGameResultEnum[] personalGameResults = new PersonalGameResultEnum[2];
 
-        if (matchUserRatingsRecord.isDraw()) {
-            personalMatchResults[0] = PersonalMatchResultEnum.DRAW;
-            personalMatchResults[1] = PersonalMatchResultEnum.DRAW;
+        if (gameUserRatingsRecord.isDraw()) {
+            personalGameResults[0] = PersonalGameResultEnum.DRAW;
+            personalGameResults[1] = PersonalGameResultEnum.DRAW;
         } else {
-            switch (matchUserRatingsRecord.getWinnerColor()) {
+            switch (gameUserRatingsRecord.getWinnerColor()) {
                 case WHITE:
-                    personalMatchResults[0] = PersonalMatchResultEnum.WIN;
-                    personalMatchResults[1] = PersonalMatchResultEnum.LOSS;
+                    personalGameResults[0] = PersonalGameResultEnum.WIN;
+                    personalGameResults[1] = PersonalGameResultEnum.LOSS;
                     break;
                 case BLACK:
-                    personalMatchResults[0] = PersonalMatchResultEnum.LOSS;
-                    personalMatchResults[1] = PersonalMatchResultEnum.WIN;
+                    personalGameResults[0] = PersonalGameResultEnum.LOSS;
+                    personalGameResults[1] = PersonalGameResultEnum.WIN;
                     break;
 
                 default:
-                    throw new RuntimeException("Incorrect winner color: " + matchUserRatingsRecord.getWinnerColor());
+                    throw new RuntimeException("Incorrect winner color: " + gameUserRatingsRecord.getWinnerColor());
             }
         }
 
@@ -160,17 +160,16 @@ public class MatcherService {
             int currentK = currentUserRatings[i].getK();
 
             ratingsChanges[i] = EloRating.getRatingChange(initialRatings[i], initialRatings[(i + 1) % 2],
-                    currentK, personalMatchResults[i]);
+                    currentK, personalGameResults[i]);
             int updatedRating = initialRatings[i] + ratingsChanges[i];
 
-            int matchesPlayed = currentUserRatings[i].incrementMatchesPlayed();
-            currentUserRatings[i].setK(EloRating.updateK(currentK, updatedRating, matchesPlayed));
+            int gamesPlayed = currentUserRatings[i].incrementGamesPlayed();
+            currentUserRatings[i].setK(EloRating.updateK(currentK, updatedRating, gamesPlayed));
             currentUserRatings[i].setRating(updatedRating);
         }
 
-        matchUserRatingsRecord.setWhiteRatingChange(ratingsChanges[0]);
-        matchUserRatingsRecord.setBlackRatingChange(ratingsChanges[1]);
+        gameUserRatingsRecord.setWhiteRatingChange(ratingsChanges[0]);
+        gameUserRatingsRecord.setBlackRatingChange(ratingsChanges[1]);
     }
 
 }
-

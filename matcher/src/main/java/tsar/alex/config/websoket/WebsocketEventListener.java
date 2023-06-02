@@ -8,18 +8,16 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import tsar.alex.model.WebsocketSessionWrapper;
+import tsar.alex.model.WebsocketSessionMap;
 import tsar.alex.utils.WebsocketCommonUtils;
-import tsar.alex.utils.websocket.UsersWaitingForMatchWebsocketHolder;
-
-import java.util.Map;
+import tsar.alex.api.websocket.UsersWaitingForGameWebsocketHolder;
 
 @Component
 @AllArgsConstructor
 public class WebsocketEventListener {
 
-    private final Map<String, WebsocketSessionWrapper> websocketSessions;
-    private final UsersWaitingForMatchWebsocketHolder UWFMWebsocketHolder;
-
+    private final WebsocketSessionMap websocketSessions;
+    private final UsersWaitingForGameWebsocketHolder uwfgWebsocketHolder;
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
@@ -34,9 +32,9 @@ public class WebsocketEventListener {
             return;
         }
 
-        WebsocketCommonUtils.cancelOldTimeoutFinisher(websocketSessionWrapper, false);
+        WebsocketCommonUtils.cancelOldTimeoutDisconnectTask(websocketSessionWrapper, false);
 
         AbstractAuthenticationToken authentication = (AbstractAuthenticationToken) accessor.getUser();
-        UWFMWebsocketHolder.removeDisconnectedUserIfPossible(authentication.getName(), sessionId);
+        uwfgWebsocketHolder.removeDisconnectedUserIfPossible(authentication.getName(), sessionId);
     }
 }

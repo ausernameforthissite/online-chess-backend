@@ -1,17 +1,17 @@
 DROP TABLE IF EXISTS current_user_rating;
-DROP TABLE IF EXISTS chess_match_user_ratings_record;
+DROP TABLE IF EXISTS chess_game_user_ratings_record;
 
 CREATE TABLE current_user_rating (
      username VARCHAR,
      chess_game_type VARCHAR,
      rating INT NOT NULL,
-     matches_played INT NOT NULL,
+     games_played INT NOT NULL,
      k INT NOT NULL,
      PRIMARY KEY(username, chess_game_type)
 );
 
-CREATE TABLE chess_match_user_ratings_record (
-     match_id VARCHAR PRIMARY KEY,
+CREATE TABLE chess_game_user_ratings_record (
+     game_id VARCHAR PRIMARY KEY,
      chess_game_type VARCHAR NOT NULL,
      started_at TIMESTAMPTZ NOT NULL,
      finished BOOLEAN NOT NULL,

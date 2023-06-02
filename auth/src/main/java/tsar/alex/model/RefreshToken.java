@@ -2,13 +2,15 @@ package tsar.alex.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.Instant;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -18,7 +20,7 @@ public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private long id;
 
     @Column(name = "token")
     private String token;
@@ -27,7 +29,7 @@ public class RefreshToken {
     private Instant expiresAt;
 
     @Transient
-    private Long maxAge;
+    private long maxAge;
 
     @ManyToOne
     @JoinColumn(name = "username", referencedColumnName = "username")

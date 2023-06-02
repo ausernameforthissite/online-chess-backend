@@ -1,11 +1,17 @@
 package tsar.alex.utils;
 
+import javax.validation.constraints.NotNull;
 import tsar.alex.dto.TimeLefts;
 import tsar.alex.model.*;
+import tsar.alex.model.chessPieces.*;
 
 import static tsar.alex.utils.ChessGameConstants.BOARD_LENGTH;
+import static tsar.alex.utils.CommonTextConstants.INCORRECT_CHESS_PIECE_CLASS;
 
 public class ChessGameUtils {
+
+    private static final Class<?>[] CHESS_PIECE_CLASSES_ARRAY = new Class[]{Bishop.class, King.class, Knight.class,
+            Pawn.class, Queen.class, Rook.class};
 
     public static boolean isCoordPossible(int coord) {
         return coord >= 0 && coord < BOARD_LENGTH;
@@ -15,8 +21,12 @@ public class ChessGameUtils {
         return isCoordPossible(coords.getNumberCoord()) && isCoordPossible(coords.getLetterCoord());
     }
 
+    public static ChessColor getChessSquareColorByCoords(int numberCoord, int letterCoord) {
+        return (numberCoord + letterCoord) % 2 == 1 ? ChessColor.WHITE : ChessColor.BLACK;
+    }
+
     public static boolean validateChessMove(ChessMove chessMove, ChessCoords startCoords,
-                                            ChessColor userColor, ChessPiece[][] boardState) {
+            ChessColor userColor, ChessPiece[][] boardState) {
         ChessCoords endCoords = chessMove.getEndCoords();
 
         if (startCoords.equals(endCoords)) {
@@ -41,7 +51,7 @@ public class ChessGameUtils {
                 return false;
             }
 
-            if (Math.abs(chessMove.getCastling()) > 1 ) {
+            if (Math.abs(chessMove.getCastling()) > 1) {
                 return false;
             }
 
@@ -51,11 +61,12 @@ public class ChessGameUtils {
         }
 
         if (chessMove.getPawnPromotionPiece() != null) {
-            if (chessMove.getStartPiece() != ChessPieceEnum.PAWN){
+            if (chessMove.getStartPiece() != ChessPieceEnum.PAWN) {
                 return false;
             }
 
-            if (chessMove.getPawnPromotionPiece() == ChessPieceEnum.PAWN || chessMove.getPawnPromotionPiece() == ChessPieceEnum.KING) {
+            if (chessMove.getPawnPromotionPiece() == ChessPieceEnum.PAWN
+                    || chessMove.getPawnPromotionPiece() == ChessPieceEnum.KING) {
                 return false;
             }
         }
@@ -83,11 +94,11 @@ public class ChessGameUtils {
         return true;
     }
 
-    public static String getCurrentTurnUsername(UsersInMatch usersInMatch, int currentMoveNumber) {
+    public static String getCurrentTurnUsername(UsersInGame usersInGame, int currentMoveNumber) {
         if (currentMoveNumber % 2 == 0) {
-            return usersInMatch.getWhiteUsername();
+            return usersInGame.getWhiteUsername();
         } else {
-            return usersInMatch.getBlackUsername();
+            return usersInGame.getBlackUsername();
         }
     }
 
@@ -100,19 +111,19 @@ public class ChessGameUtils {
     }
 
 
-    public static void setTimeLeftsToMatchResult(ChessMatchResult matchResult, Match match, int currentMoveNumber) {
+    public static void setTimeLeftsToGameResult(ChessGameResult gameResult, Game game, int currentMoveNumber) {
         ChessColor currentTurnUserColor = getUserColorByMoveNumber(currentMoveNumber);
         ChessColor enemyColor = ChessColor.getInvertedColor(currentTurnUserColor);
-        TimeLefts timeLefts = calculateTimeLefts(match, true, currentMoveNumber, currentTurnUserColor,
+        TimeLefts timeLefts = calculateTimeLefts(game, true, currentMoveNumber, currentTurnUserColor,
                 enemyColor);
 
-        matchResult.setTimeLeftByUserColor(currentTurnUserColor, timeLefts.getNewTimeLeft());
-        matchResult.setTimeLeftByUserColor(enemyColor, timeLefts.getEnemyTimeLeft());
+        gameResult.setTimeLeftByUserColor(currentTurnUserColor, timeLefts.getNewTimeLeft());
+        gameResult.setTimeLeftByUserColor(enemyColor, timeLefts.getEnemyTimeLeft());
     }
 
-    public static TimeLefts calculateTimeLefts(Match match, boolean finished, int currentMoveNumber,
-                                               ChessColor currentTurnUserColor, ChessColor enemyColor) {
-        ChessGameTypeWithTimings gameType = match.getGameType();
+    public static TimeLefts calculateTimeLefts(Game game, boolean finished, int currentMoveNumber,
+            ChessColor currentTurnUserColor, ChessColor enemyColor) {
+        ChessGameTypeWithTimings gameType = game.getGameType();
         long newTimeLeft;
         long enemyTimeLeft;
         long thisMoveTime = System.currentTimeMillis();
@@ -123,9 +134,9 @@ public class ChessGameUtils {
             enemyTimeLeft = initialTime;
         } else {
             long timeIncrement = finished ? 0 : gameType.getTimeIncrementMS();
-            ChessMove prevMove = match.getChessMovesRecord().get(currentMoveNumber - 1);
+            ChessMove prevMove = game.getChessMovesRecord().get(currentMoveNumber - 1);
             long timeLeft = prevMove.getTimeLeftByUserColor(currentTurnUserColor);
-            newTimeLeft = timeLeft - (thisMoveTime - match.getLastMoveTimeMS()) + timeIncrement;
+            newTimeLeft = timeLeft - (thisMoveTime - game.getLastMoveTimeMS()) + timeIncrement;
             newTimeLeft = newTimeLeft < 0 ? 0 : newTimeLeft;
             enemyTimeLeft = prevMove.getTimeLeftByUserColor(enemyColor);
         }
@@ -139,7 +150,7 @@ public class ChessGameUtils {
         for (int i = 0; i < BOARD_LENGTH; i++) {
             for (int j = 0; j < BOARD_LENGTH; j++) {
                 if (boardState[i][j] == null) {
-                    stringBuilder.append("n");
+                    stringBuilder.append((char) 120);
                 } else {
                     stringBuilder.append(getChessPieceTypeOrdinal(boardState[i][j]));
                 }
@@ -148,25 +159,16 @@ public class ChessGameUtils {
         return stringBuilder.toString();
     }
 
-    private static int getChessPieceTypeOrdinal(ChessPiece chessPiece) {
+    private static char getChessPieceTypeOrdinal(@NotNull ChessPiece chessPiece) {
         Class<?> chessPieceClass = chessPiece.getClass();
 
-        switch (chessPieceClass.getSimpleName()) {
-            case "Bishop":
-                return 0;
-            case "King":
-                return 1;
-            case "Knight":
-                return 2;
-            case "Pawn":
-                return 3;
-            case "Queen":
-                return 4;
-            case "Rook":
-                return 5;
-            default:
-                throw new RuntimeException("Incorrect Chess Piece class: " + chessPieceClass);
+        for (int i = 0; i < CHESS_PIECE_CLASSES_ARRAY.length; i++) {
+            if (CHESS_PIECE_CLASSES_ARRAY[i].equals(chessPieceClass)) {
+                return (char) (i + (chessPiece.getColor() == ChessColor.WHITE ? 100 : 110));
+            }
         }
+
+        throw new RuntimeException(String.format(INCORRECT_CHESS_PIECE_CLASS, chessPieceClass));
     }
 
 }

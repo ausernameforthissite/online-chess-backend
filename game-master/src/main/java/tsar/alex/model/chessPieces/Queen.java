@@ -6,7 +6,7 @@ import lombok.ToString;
 import tsar.alex.model.ChessColor;
 import tsar.alex.model.ChessCoords;
 import tsar.alex.model.ChessPiece;
-import tsar.alex.model.Match;
+import tsar.alex.model.Game;
 
 @Getter
 @Setter
@@ -21,8 +21,8 @@ public class Queen extends ChessPiece {
     }
 
     @Override
-    protected boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords) {
-        ChessPiece[][] boardState = match.getBoardState();
+    protected boolean doesPieceHavePossibleMoves(Game game, ChessCoords startCoords, ChessCoords kingCoords) {
+        ChessPiece[][] boardState = game.getBoardState();
         return checkGoDiagonal(boardState, startCoords, kingCoords, this.color)
                 || checkGoVertical(boardState, startCoords, kingCoords, this.color)
                 || checkGoHorizontal(boardState, startCoords, kingCoords, this.color);

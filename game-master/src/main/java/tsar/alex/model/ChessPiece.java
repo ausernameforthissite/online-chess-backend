@@ -28,14 +28,14 @@ import static tsar.alex.utils.ChessGameConstants.BOARD_LENGTH;
 public abstract class ChessPiece implements Cloneable {
     protected ChessColor color;
 
-    protected abstract boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords);
+    protected abstract boolean doesPieceHavePossibleMoves(Game game, ChessCoords startCoords, ChessCoords kingCoords);
 
     protected abstract boolean isAttackingField(ChessPiece[][] boardState, ChessCoords startCoords, ChessCoords endCoords);
 
 
     // +
-    public boolean makeMoveIfPossible(Match match, ChessMove chessMove) {
-        ChessPiece[][] boardState = match.getBoardState();
+    public boolean makeMoveIfPossible(Game game, ChessMove chessMove) {
+        ChessPiece[][] boardState = game.getBoardState();
 
         ChessCoords startCoords = chessMove.getStartCoords();
         ChessCoords endCoords = chessMove.getEndCoords();
@@ -47,9 +47,9 @@ public abstract class ChessPiece implements Cloneable {
         ChessCoords kingCoords = this instanceof King ? endCoords : findKingCoords(boardState, this.color);
 
         if (!willBeCheck(boardState, startCoords, endCoords, kingCoords, this.color)) {
-            chessMove.setPreviousEnPassantCoords(match.getEnPassantPawnCoords());
+            chessMove.setPreviousEnPassantCoords(game.getEnPassantPawnCoords());
 
-            match.setEnPassantPawnCoords(null);
+            game.setEnPassantPawnCoords(null);
 
             chessMove.setEndPieceFirstMove(isEndPieceFirstMove(
                                             boardState[endCoords.getNumberCoord()][endCoords.getLetterCoord()]));
@@ -137,15 +137,15 @@ public abstract class ChessPiece implements Cloneable {
 
 
 
-    public static boolean doesEnemyHavePossibleMoves(Match match, ChessCoords enemyKingCoords, ChessColor enemyColor) {
-        ChessPiece[][] boardState = match.getBoardState();
+    public static boolean doesEnemyHavePossibleMoves(Game game, ChessCoords enemyKingCoords, ChessColor enemyColor) {
+        ChessPiece[][] boardState = game.getBoardState();
 
         for (int i = 0; i < BOARD_LENGTH; i++) {
             for (int j = 0; j < BOARD_LENGTH; j++) {
                 ChessPiece chessPiece = boardState[i][j];
 
                 if (chessPiece != null && chessPiece.color == enemyColor
-                    && chessPiece.doesPieceHavePossibleMoves(match, new ChessCoords(i, j), enemyKingCoords)) {
+                    && chessPiece.doesPieceHavePossibleMoves(game, new ChessCoords(i, j), enemyKingCoords)) {
                     return true;
                 }
             }

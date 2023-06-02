@@ -6,7 +6,7 @@ import lombok.ToString;
 import tsar.alex.model.ChessColor;
 import tsar.alex.model.ChessCoords;
 import tsar.alex.model.ChessPiece;
-import tsar.alex.model.Match;
+import tsar.alex.model.Game;
 import tsar.alex.utils.ChessGameUtils;
 
 @Getter
@@ -22,8 +22,8 @@ public class Knight extends ChessPiece {
     }
 
     @Override
-    protected boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords) {
-        ChessPiece[][] boardState = match.getBoardState();
+    protected boolean doesPieceHavePossibleMoves(Game game, ChessCoords startCoords, ChessCoords kingCoords) {
+        ChessPiece[][] boardState = game.getBoardState();
 
         int startNumberCoord = startCoords.getNumberCoord();
         int startLetterCoord = startCoords.getLetterCoord();

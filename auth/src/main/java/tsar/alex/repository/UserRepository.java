@@ -6,6 +6,6 @@ import tsar.alex.model.User;
 
 
 @Repository
-public interface UserRepository extends JpaRepository<User,String> {
+public interface UserRepository extends JpaRepository<User, String> {
 
 }

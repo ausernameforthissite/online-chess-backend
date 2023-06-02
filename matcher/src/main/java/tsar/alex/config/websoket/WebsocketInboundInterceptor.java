@@ -22,11 +22,11 @@ import tsar.alex.exception.WebsocketErrorCodeEnum;
 import tsar.alex.exception.WebsocketException;
 import tsar.alex.model.ChessGameTypeWithTimings;
 import tsar.alex.model.WebsocketSessionWrapper;
-import tsar.alex.utils.websocket.UsersWaitingForMatchWebsocketHolder;
+import tsar.alex.api.websocket.UsersWaitingForGameWebsocketHolder;
 
 
 import java.util.List;
-import java.util.Map;
+import tsar.alex.model.WebsocketSessionMap;
 
 
 @Component
@@ -34,14 +34,14 @@ import java.util.Map;
 public class WebsocketInboundInterceptor implements ChannelInterceptor {
 
     private final JwtDecoder jwtDecoder;
-    private final Map<String, WebsocketSessionWrapper> websocketSessions;
+    private final WebsocketSessionMap websocketSessions;
 
-    private UsersWaitingForMatchWebsocketHolder UWFMWebsocketHolder;
+    private UsersWaitingForGameWebsocketHolder uwfgWebsocketHolder;
 
     @Autowired
     @Lazy
-    public void setUWFMWebsocketHolder(UsersWaitingForMatchWebsocketHolder UWFMWebsocketHolder) {
-        this.UWFMWebsocketHolder = UWFMWebsocketHolder;
+    public void setUwfgWebsocketHolder(UsersWaitingForGameWebsocketHolder uwfgWebsocketHolder) {
+        this.uwfgWebsocketHolder = uwfgWebsocketHolder;
     }
 
     @Override
@@ -72,12 +72,12 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
                 throw new WebsocketException(NO_AUTHORIZATION_HEADER, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
 
-
             List<String> searchGameTypeArray = accessor.getNativeHeader("GameType");
             if (searchGameTypeArray != null && searchGameTypeArray.size() == 1) {
                 try {
                     String searchGameTypeString = searchGameTypeArray.get(0);
-                    ChessGameTypeWithTimings searchGameType = ChessGameTypeWithTimings.valueOf(searchGameTypeString.toUpperCase());
+                    ChessGameTypeWithTimings searchGameType = ChessGameTypeWithTimings.valueOf(
+                            searchGameTypeString.toUpperCase());
                     authentication.setDetails(searchGameType);
                 } catch (Exception e) {
                     throw new WebsocketException(INCORRECT_GAME_TYPE, WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
@@ -93,13 +93,14 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
             WebsocketSessionWrapper websocketSessionWrapper = websocketSessions.get(sessionId);
 
             if (websocketSessionWrapper == null) {
-                throw new WebsocketException(String.format(NO_ACTIVE_SESSION, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
+                throw new WebsocketException(String.format(NO_ACTIVE_SESSION, sessionId),
+                        WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
             }
 
             AbstractAuthenticationToken authentication = (AbstractAuthenticationToken) accessor.getUser();
             ChessGameTypeWithTimings searchGameType = (ChessGameTypeWithTimings) authentication.getDetails();
 
-            UWFMWebsocketHolder.addUserIfPossible(authentication.getName(), searchGameType, websocketSessionWrapper);
+            uwfgWebsocketHolder.addUserIfPossible(authentication.getName(), searchGameType, websocketSessionWrapper);
         }
 
         if (StompCommand.UNSUBSCRIBE.equals(command)) {
@@ -107,7 +108,8 @@ public class WebsocketInboundInterceptor implements ChannelInterceptor {
             String username = accessor.getUser().getName();
             String sessionId = accessor.getSessionId();
 
-            throw new WebsocketException(String.format(CANNOT_UNSUBSCRIBE, username, sessionId), WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
+            throw new WebsocketException(String.format(CANNOT_UNSUBSCRIBE, username, sessionId),
+                    WebsocketErrorCodeEnum.CLOSE_CONNECTION_GENERAL);
         }
 
         if (StompCommand.DISCONNECT.equals(command)) {

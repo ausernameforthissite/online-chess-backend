@@ -16,12 +16,12 @@ public class WebsocketCommonUtils {
         return headerAccessor.getMessageHeaders();
     }
 
-    public static void cancelOldTimeoutFinisher(WebsocketSessionWrapper websocketSessionWrapper,
+    public static void cancelOldTimeoutDisconnectTask(WebsocketSessionWrapper websocketSessionWrapper,
                                                 boolean mayInterruptWhenRunning) {
-        ScheduledFuture<?> oldTimeoutFinisher = websocketSessionWrapper.getTimeoutFinisher();
+        ScheduledFuture<?> oldTimeoutDisconnectTask = websocketSessionWrapper.getTimeoutDisconnectTask();
 
-        if (oldTimeoutFinisher != null) {
-            oldTimeoutFinisher.cancel(mayInterruptWhenRunning);
+        if (oldTimeoutDisconnectTask != null) {
+            oldTimeoutDisconnectTask.cancel(mayInterruptWhenRunning);
         }
     }
 }

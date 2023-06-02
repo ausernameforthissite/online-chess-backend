@@ -15,11 +15,11 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 import tsar.alex.config.websocket.CustomErrorHandler;
+import tsar.alex.model.WebsocketSessionMap;
 import tsar.alex.model.WebsocketSessionWrapper;
 import tsar.alex.utils.Constants;
 import tsar.alex.utils.TimeoutWebsocketCloseHandler;
 
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final ScheduledExecutorService scheduledExecutorService;
-    private final Map<String, WebsocketSessionWrapper> websocketSessions;
+    private final WebsocketSessionMap websocketSessions;
 
     private TaskScheduler messageBrokerTaskScheduler;
 
@@ -54,11 +54,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                         System.out.println("After connection");
                         System.out.println("Session id = " + session.getId());
-                        ScheduledFuture<?> timeoutFinisher = scheduledExecutorService.schedule(
+                        ScheduledFuture<?> timeoutDisconnectTask = scheduledExecutorService.schedule(
                                                                 new TimeoutWebsocketCloseHandler(session),
                                                                 Constants.NOT_SUBSCRIBED_SESSION_TIMEOUT_MS,
                                                                 TimeUnit.MILLISECONDS);
-                        websocketSessions.put(session.getId(), new WebsocketSessionWrapper(session, timeoutFinisher));
+                        websocketSessions.put(session.getId(), new WebsocketSessionWrapper(session, timeoutDisconnectTask));
 
                         super.afterConnectionEstablished(session);
                     }

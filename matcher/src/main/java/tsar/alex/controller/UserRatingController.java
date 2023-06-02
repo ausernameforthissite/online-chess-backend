@@ -14,9 +14,9 @@ import tsar.alex.dto.response.RestApiOkResponse;
 import tsar.alex.dto.response.UpdateUsersRatingsBadResponse;
 import tsar.alex.dto.response.UpdateUsersRatingsOkResponse;
 import tsar.alex.dto.response.UpdateUsersRatingsResponse;
-import tsar.alex.dto.response.UserInMatchStatusResponse;
-import tsar.alex.dto.response.UsersRatingsDataForMatchBadResponse;
-import tsar.alex.dto.response.UsersRatingsDataForMatchResponse;
+import tsar.alex.dto.response.UserInGameStatusResponse;
+import tsar.alex.dto.response.UsersRatingsDataForGameBadResponse;
+import tsar.alex.dto.response.UsersRatingsDataForGameResponse;
 import tsar.alex.service.MatcherService;
 import tsar.alex.utils.Utils;
 
@@ -28,15 +28,15 @@ public class UserRatingController {
 
     private final MatcherService matcherService;
 
-    @GetMapping("/match/{id}/ratings")
-    public ResponseEntity<UsersRatingsDataForMatchResponse> getUsersRatingDataByMatchId(@PathVariable("id") String matchId) {
-        String errorMessage = Utils.validateMatchId(matchId);
+    @GetMapping("/game/{id}/ratings")
+    public ResponseEntity<UsersRatingsDataForGameResponse> getUsersRatingDataByGameId(@PathVariable("id") String gameId) {
+        String errorMessage = Utils.validateGameId(gameId);
 
         if (errorMessage != null) {
-            return new ResponseEntity<>(new UsersRatingsDataForMatchBadResponse(errorMessage), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new UsersRatingsDataForGameBadResponse(errorMessage), HttpStatus.NOT_FOUND);
         }
 
-        UsersRatingsDataForMatchResponse response = matcherService.getUsersRatingsDataByMatchId(matchId);
+        UsersRatingsDataForGameResponse response = matcherService.getUsersRatingsDataByGameId(gameId);
 
         HttpStatus httpStatus = response instanceof RestApiOkResponse ? HttpStatus.OK : HttpStatus.NOT_FOUND;
         return new ResponseEntity<>(response, httpStatus);
@@ -44,18 +44,18 @@ public class UserRatingController {
 
 
     @GetMapping("/user")
-    public ResponseEntity<UserInMatchStatusResponse> getUserInMatchStatus() {
-        UserInMatchStatusResponse response = matcherService.getUserInMatchStatus();
+    public ResponseEntity<UserInGameStatusResponse> getUserInGameStatus() {
+        UserInGameStatusResponse response = matcherService.getUserInGameStatus();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/initialize_user_rating")
-    public ResponseEntity<InitializeUserRatingResponse> initializeUserRating(@RequestBody @Valid InitializeUserRatingRequest request,
-                                                        BindingResult bindingResult) {
+    public ResponseEntity<InitializeUserRatingResponse> initializeUserRating(
+            @RequestBody @Valid InitializeUserRatingRequest request, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(new InitializeUserRatingBadResponse(Utils.getBindingResultErrorsAsString(bindingResult)),
-                HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new InitializeUserRatingBadResponse(
+                    Utils.getBindingResultErrorsAsString(bindingResult)), HttpStatus.BAD_REQUEST);
         }
 
         InitializeUserRatingResponse response = matcherService.initializeUserRating(request.getUsername());
@@ -64,13 +64,14 @@ public class UserRatingController {
     }
 
     @PostMapping("/update_users_ratings")
-    public ResponseEntity<UpdateUsersRatingsResponse> updateUsersRatings(@RequestBody @Valid UpdateUsersRatingsRequest request,
-                                                        BindingResult bindingResult) {
+    public ResponseEntity<UpdateUsersRatingsResponse> updateUsersRatings(
+            @RequestBody @Valid UpdateUsersRatingsRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(new UpdateUsersRatingsBadResponse(Utils.getBindingResultErrorsAsString(bindingResult)),
+            return new ResponseEntity<>(
+                    new UpdateUsersRatingsBadResponse(Utils.getBindingResultErrorsAsString(bindingResult)),
                     HttpStatus.BAD_REQUEST);
         }
-        matcherService.updateAfterMatchFinished(request);
+        matcherService.updateAfterGameFinished(request);
 
         return new ResponseEntity<>(new UpdateUsersRatingsOkResponse(), HttpStatus.OK);
     }

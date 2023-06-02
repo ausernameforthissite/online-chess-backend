@@ -1,5 +1,5 @@
 # Database properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/matcher_db
+spring.datasource.url=jdbc:postgresql://localhost:5432/Gameer_db
 
 spring.datasource.username=
 spring.datasource.password=

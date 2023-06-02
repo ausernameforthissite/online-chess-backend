@@ -2,7 +2,7 @@ package tsar.alex.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import tsar.alex.dto.MatchStateOkResponse;
+import tsar.alex.dto.GameStateOkResponse;
 import tsar.alex.dto.request.UpdateUsersRatingsRequest;
 import tsar.alex.model.*;
 
@@ -10,16 +10,16 @@ import tsar.alex.model.*;
 @Mapper(componentModel = "spring")
 public interface GameMasterMapper {
 
-    @Mapping(target="finished", source="match.finished")
-    @Mapping(target="usersInMatch", source="match.usersInMatch")
-    @Mapping(target="matchResult", source="match.result")
-    @Mapping(target="matchRecord", source="match.chessMovesRecord")
-    MatchStateOkResponse mapToMatchStateOkResponse(Match match);
+    @Mapping(target="finished", source="game.finished")
+    @Mapping(target="usersInGame", source="game.usersInGame")
+    @Mapping(target="gameResult", source="game.result")
+    @Mapping(target="gameRecord", source="game.chessMovesRecord")
+    GameStateOkResponse mapToGameStateOkResponse(Game game);
 
 
-    @Mapping(target="matchId", source="match.id")
-    @Mapping(target="technicalFinish", source="match.result.technicalFinish")
-    @Mapping(target="draw", source="match.result.draw")
-    @Mapping(target="winnerColor", source="match.result.winnerColor")
-    UpdateUsersRatingsRequest mapToUpdateUsersRatingsRequest(Match match);
+    @Mapping(target="gameId", source="game.id")
+    @Mapping(target="technicalFinish", source="game.result.technicalFinish")
+    @Mapping(target="draw", source="game.result.draw")
+    @Mapping(target="winnerColor", source="game.result.winnerColor")
+    UpdateUsersRatingsRequest mapToUpdateUsersRatingsRequest(Game game);
 }

@@ -6,8 +6,8 @@
     </root>
     <schema id="2" parent="1" name="admin"/>
     <schema id="3" parent="1" name="config"/>
-    <schema id="4" parent="1" name="local"/>
-    <schema id="5" parent="1" name="match_db"/>
-    <table id="6" parent="5" name="match"/>
+    <schema id="4" parent="1" name="game_db"/>
+    <schema id="5" parent="1" name="local"/>
+    <table id="6" parent="4" name="game"/>
   </database-model>
 </dataSource>

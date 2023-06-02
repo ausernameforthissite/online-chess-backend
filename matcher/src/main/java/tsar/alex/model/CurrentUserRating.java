@@ -33,8 +33,8 @@ public class CurrentUserRating {
     @Column(name = "rating")
     private int rating;
 
-    @Column(name = "matches_played")
-    private int matchesPlayed;
+    @Column(name = "games_played")
+    private int gamesPlayed;
 
     @Column(name = "k")
     private int K;
@@ -44,8 +44,8 @@ public class CurrentUserRating {
         return new CurrentUserRating(username, chessGameType, EloRating.DEFAULT_USER_RATING, 0, EloRating.K_VALUES[0]);
     }
 
-    public int incrementMatchesPlayed() {
-        return ++this.matchesPlayed;
+    public int incrementGamesPlayed() {
+        return ++this.gamesPlayed;
     }
 
 }

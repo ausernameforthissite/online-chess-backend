@@ -10,7 +10,7 @@ import static tsar.alex.utils.ChessGameConstants.BOARD_LENGTH;
 
 @Getter
 @Setter
-@ToString(callSuper=true)
+@ToString(callSuper = true)
 public class King extends ChessPiece {
 
     private boolean firstMove;
@@ -25,9 +25,9 @@ public class King extends ChessPiece {
 
 
     @Override
-    public boolean makeMoveIfPossible(Match match, ChessMove chessMove) {
+    public boolean makeMoveIfPossible(Game game, ChessMove chessMove) {
         if (chessMove.getCastling() == 0) {
-            if (super.makeMoveIfPossible(match, chessMove)) {
+            if (super.makeMoveIfPossible(game, chessMove)) {
                 chessMove.setStartPieceFirstMove(this.firstMove);
                 this.firstMove = false;
                 return true;
@@ -35,11 +35,11 @@ public class King extends ChessPiece {
                 return false;
             }
         } else {
-            return doCastling(match, chessMove);
+            return doCastling(game, chessMove);
         }
     }
 
-    private boolean doCastling(Match match, ChessMove chessMove) {
+    private boolean doCastling(Game game, ChessMove chessMove) {
         if (this.firstMove) {
 
             ChessCoords startCoords = chessMove.getStartCoords();
@@ -56,7 +56,7 @@ public class King extends ChessPiece {
             }
 
             int rookInitialLetterCoord = sign < 0 ? 0 : BOARD_LENGTH - 1;
-            ChessPiece[][] boardState = match.getBoardState();
+            ChessPiece[][] boardState = game.getBoardState();
 
             if (boardState[numberCoord][rookInitialLetterCoord] instanceof Rook myRook
                     && myRook.getColor() == this.color && myRook.isFirstMove()) {
@@ -79,7 +79,7 @@ public class King extends ChessPiece {
                     }
                 }
 
-                match.setEnPassantPawnCoords(null);
+                game.setEnPassantPawnCoords(null);
                 boardState[numberCoord][endLetterCoord] = this;
                 boardState[numberCoord][endLetterCoord - sign] = myRook;
                 this.firstMove = false;
@@ -93,8 +93,8 @@ public class King extends ChessPiece {
     }
 
     @Override
-    protected boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords) {
-        ChessPiece[][] boardState = match.getBoardState();
+    protected boolean doesPieceHavePossibleMoves(Game game, ChessCoords startCoords, ChessCoords kingCoords) {
+        ChessPiece[][] boardState = game.getBoardState();
 
         int startNumberCoord = startCoords.getNumberCoord();
         int startLetterCoord = startCoords.getLetterCoord();
@@ -119,9 +119,8 @@ public class King extends ChessPiece {
                     continue;
                 }
 
-
                 if (!(boardState[newNumberCoord][newLetterCoord] != null
-                    && boardState[newNumberCoord][newLetterCoord].getColor() == this.color)) {
+                        && boardState[newNumberCoord][newLetterCoord].getColor() == this.color)) {
                     ChessCoords endCoords = new ChessCoords(newNumberCoord, newLetterCoord);
                     if (!willBeCheck(boardState, startCoords, endCoords, endCoords, this.color)) {
                         return true;
@@ -129,7 +128,7 @@ public class King extends ChessPiece {
                 }
             }
         }
-        
+
         return false;
     }
 

@@ -9,7 +9,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 
-
 @Configuration
 @AllArgsConstructor
 @EnableWebSocketMessageBroker

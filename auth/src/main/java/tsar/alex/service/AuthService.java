@@ -1,5 +1,6 @@
 package tsar.alex.service;
 
+import static tsar.alex.utils.CommonTextConstants.*;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpEntity;
@@ -34,10 +35,6 @@ import java.time.Instant;
 @Transactional
 public class AuthService {
 
-    private static final String ALREADY_REGISTERED = "Пользователь с таким именем уже зарегистрирован!";
-    private static final String USER_NOT_FOUND = "There is no registered user with username: %s";
-    private static final String INCORRECT_RESPONSE = "Received response of incorrect type from matcher microservice";
-
     private final RestTemplate restTemplate;
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
@@ -59,7 +56,6 @@ public class AuthService {
                 authMapper.mapToInitializeRatingRequest(persistentUser));
         InitializeUserRatingResponse response = restTemplate.postForObject(Endpoints.INITIALIZE_USER_RATING,
                 httpRequest, InitializeUserRatingResponse.class);
-
 
         if (response instanceof InitializeUserRatingOkResponse) {
             return new RegisterOkResponse();
@@ -84,7 +80,6 @@ public class AuthService {
         User user = refreshTokenService.validateRefreshTokenAndRetrieveUser(refreshToken);
         return generateLoginRefreshResponse(user);
     }
-
 
     public LoginRefreshDto generateLoginRefreshResponse(User user) {
         String accessToken = jwtProvider.generateToken(user);

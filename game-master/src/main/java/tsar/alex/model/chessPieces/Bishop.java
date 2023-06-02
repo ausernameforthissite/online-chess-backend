@@ -6,7 +6,7 @@ import lombok.ToString;
 import tsar.alex.model.ChessColor;
 import tsar.alex.model.ChessCoords;
 import tsar.alex.model.ChessPiece;
-import tsar.alex.model.Match;
+import tsar.alex.model.Game;
 
 @Getter
 @Setter
@@ -27,7 +27,7 @@ public class Bishop extends ChessPiece {
     }
 
     @Override
-    protected boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords) {
-        return checkGoDiagonal(match.getBoardState(), startCoords, kingCoords, this.color);
+    protected boolean doesPieceHavePossibleMoves(Game game, ChessCoords startCoords, ChessCoords kingCoords) {
+        return checkGoDiagonal(game.getBoardState(), startCoords, kingCoords, this.color);
     }
 }

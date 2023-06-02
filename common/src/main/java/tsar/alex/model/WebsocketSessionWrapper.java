@@ -10,16 +10,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class WebsocketSessionWrapper {
 
     private final WebSocketSession session;
-    private ScheduledFuture<?> timeoutFinisher;
+    private ScheduledFuture<?> timeoutDisconnectTask;
 
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     protected final Lock readLock = rwLock.readLock();
     protected final Lock writeLock = rwLock.writeLock();
 
 
-    public WebsocketSessionWrapper(WebSocketSession session, ScheduledFuture<?> timeoutFinisher) {
+    public WebsocketSessionWrapper(WebSocketSession session, ScheduledFuture<?> timeoutDisconnectTask) {
         this.session = session;
-        this.timeoutFinisher = timeoutFinisher;
+        this.timeoutDisconnectTask = timeoutDisconnectTask;
     }
 
     public WebSocketSession getSession() {
@@ -31,19 +31,19 @@ public class WebsocketSessionWrapper {
         }
     }
 
-    public ScheduledFuture<?> getTimeoutFinisher() {
+    public ScheduledFuture<?> getTimeoutDisconnectTask() {
         readLock.lock();
         try {
-            return timeoutFinisher;
+            return timeoutDisconnectTask;
         } finally {
             readLock.unlock();
         }
     }
 
-    public void setTimeoutFinisher(ScheduledFuture<?> timeoutFinisher) {
+    public void setTimeoutDisconnectTask(ScheduledFuture<?> timeoutDisconnectTask) {
         writeLock.lock();
         try {
-            this.timeoutFinisher = timeoutFinisher;
+            this.timeoutDisconnectTask = timeoutDisconnectTask;
         } finally {
             writeLock.unlock();
         }

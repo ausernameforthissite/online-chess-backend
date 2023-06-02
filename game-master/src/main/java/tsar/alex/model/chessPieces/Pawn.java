@@ -25,10 +25,10 @@ public class Pawn extends ChessPiece {
     }
 
     @Override
-    public boolean makeMoveIfPossible(Match match, ChessMove chessMove) {
-        chessMove.setPreviousEnPassantCoords(match.getEnPassantPawnCoords());
+    public boolean makeMoveIfPossible(Game game, ChessMove chessMove) {
+        chessMove.setPreviousEnPassantCoords(game.getEnPassantPawnCoords());
 
-        ChessPiece[][] boardState = match.getBoardState();
+        ChessPiece[][] boardState = game.getBoardState();
 
         final int direction = getPawnDirection();
         boolean pawnWillBePromoted = chessMove.getPawnPromotionPiece() != null;
@@ -43,9 +43,10 @@ public class Pawn extends ChessPiece {
 
         final ChessCoords kingCoords = findKingCoords(boardState, this.color);
 
-        boolean result = goForward(match, chessMove, direction, kingCoords);
+        boolean result = goForward(game, chessMove, direction, kingCoords);
+
         if (!result) {
-            result = capture(match, chessMove, kingCoords);
+            result = capture(game, chessMove, kingCoords);
         }
 
         if (result) {
@@ -61,7 +62,7 @@ public class Pawn extends ChessPiece {
         }
     }
 
-    private boolean goForward(Match match, ChessMove chessMove, int direction, ChessCoords kingCoords) {
+    private boolean goForward(Game game, ChessMove chessMove, int direction, ChessCoords kingCoords) {
         if (chessMove.getEndPiece() != null) {
             return false;
         }
@@ -76,7 +77,7 @@ public class Pawn extends ChessPiece {
             return false;
         }
 
-        ChessPiece[][] boardState = match.getBoardState();
+        ChessPiece[][] boardState = game.getBoardState();
         if (boardState[startNumberCoord + direction][letterCoord] != null) {
             return false;
         }
@@ -86,7 +87,7 @@ public class Pawn extends ChessPiece {
         if (deltaNumberCoords * direction == 1) {
             if (!willBeCheck(boardState, startCoords, endCoords, kingCoords, this.color)) {
                 changeBoardStateOneMove(boardState, startCoords, endCoords);
-                match.setEnPassantPawnCoords(null);
+                game.setEnPassantPawnCoords(null);
                 return true;
             }
             return false;
@@ -95,7 +96,7 @@ public class Pawn extends ChessPiece {
         if (this.firstMove && deltaNumberCoords * direction == 2 && boardState[endNumberCoord][letterCoord] == null) {
             if (!willBeCheck(boardState, startCoords, endCoords, kingCoords, this.color)) {
                 changeBoardStateOneMove(boardState, startCoords, endCoords);
-                match.setEnPassantPawnCoords(endCoords);
+                game.setEnPassantPawnCoords(endCoords);
                 return true;
             }
         }
@@ -103,10 +104,10 @@ public class Pawn extends ChessPiece {
         return false;
     }
 
-    private boolean capture(Match match, ChessMove chessMove, ChessCoords kingCoords) {
+    private boolean capture(Game game, ChessMove chessMove, ChessCoords kingCoords) {
         ChessCoords startCoords = chessMove.getStartCoords();
         ChessCoords endCoords = chessMove.getEndCoords();
-        ChessPiece[][] boardState = match.getBoardState();
+        ChessPiece[][] boardState = game.getBoardState();
         int startNumberCoord = startCoords.getNumberCoord();
         int endNumberCoord = endCoords.getNumberCoord();
         int endLetterCoord = endCoords.getLetterCoord();
@@ -114,7 +115,7 @@ public class Pawn extends ChessPiece {
         if (isAttackingField(boardState, startCoords, endCoords)) {
             if (boardState[endNumberCoord][endLetterCoord] != null) {
                 if (!willBeCheck(boardState, startCoords, endCoords, kingCoords, this.color)) {
-                    match.setEnPassantPawnCoords(null);
+                    game.setEnPassantPawnCoords(null);
 
                     chessMove.setEndPieceFirstMove(isEndPieceFirstMove(boardState[endCoords.getNumberCoord()][endCoords.getLetterCoord()]));
 
@@ -123,19 +124,19 @@ public class Pawn extends ChessPiece {
                 }
                 return false;
             } else if (boardState[startNumberCoord][endLetterCoord] instanceof Pawn
-                        && new ChessCoords(startNumberCoord, endLetterCoord).equals(match.getEnPassantPawnCoords())) {
-                return captureEnPassant(match, startCoords, endCoords, kingCoords);
+                        && new ChessCoords(startNumberCoord, endLetterCoord).equals(game.getEnPassantPawnCoords())) {
+                return captureEnPassant(game, startCoords, endCoords, kingCoords);
             }
         }
 
         return false;
     }
 
-    private boolean captureEnPassant(Match match, ChessCoords startCoords, ChessCoords endCoords, ChessCoords kingCoords) {
+    private boolean captureEnPassant(Game game, ChessCoords startCoords, ChessCoords endCoords, ChessCoords kingCoords) {
         int startNumberCoord = startCoords.getNumberCoord();
         int endLetterCoord = endCoords.getLetterCoord();
 
-        ChessPiece[][] boardState = match.getBoardState();
+        ChessPiece[][] boardState = game.getBoardState();
         ChessPiece[][] tempBoardState = cloneBoardState(boardState);
         changeBoardStateOneMove(tempBoardState, startCoords, endCoords);
         tempBoardState[startNumberCoord][endLetterCoord] = null;
@@ -143,7 +144,7 @@ public class Pawn extends ChessPiece {
         if (isUnderAttack(tempBoardState, kingCoords, this.color)) {
             return false;
         } else {
-            match.setEnPassantPawnCoords(null);
+            game.setEnPassantPawnCoords(null);
             changeBoardStateOneMove(boardState, startCoords, endCoords);
             boardState[startNumberCoord][endLetterCoord] = null;
             return true;
@@ -152,16 +153,16 @@ public class Pawn extends ChessPiece {
 
 
     @Override
-    protected boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords) {
+    protected boolean doesPieceHavePossibleMoves(Game game, ChessCoords startCoords, ChessCoords kingCoords) {
         int direction = getPawnDirection();
 
 
 
-        if (checkGoForward(match.getBoardState(), startCoords, direction, kingCoords)) {
+        if (checkGoForward(game.getBoardState(), startCoords, direction, kingCoords)) {
             return true;
         }
 
-        return checkCapture(match, startCoords, direction, kingCoords);
+        return checkCapture(game, startCoords, direction, kingCoords);
     }
 
     private boolean checkGoForward(ChessPiece[][] boardState, ChessCoords startCoords, int direction, ChessCoords kingCoords) {
@@ -184,8 +185,8 @@ public class Pawn extends ChessPiece {
         return false;
     }
 
-    private boolean checkCapture(Match match, ChessCoords startCoords, int direction, ChessCoords kingCoords) {
-        ChessPiece[][] boardState = match.getBoardState();
+    private boolean checkCapture(Game game, ChessCoords startCoords, int direction, ChessCoords kingCoords) {
+        ChessPiece[][] boardState = game.getBoardState();
 
         int startNumberCoord = startCoords.getNumberCoord();
         int startLetterCoord = startCoords.getLetterCoord();
@@ -206,7 +207,7 @@ public class Pawn extends ChessPiece {
                     return true;
                 }
             } else if (boardState[startNumberCoord][newLetterCoord] instanceof Pawn
-                    && new ChessCoords(startNumberCoord, newLetterCoord).equals(match.getEnPassantPawnCoords())) {
+                    && new ChessCoords(startNumberCoord, newLetterCoord).equals(game.getEnPassantPawnCoords())) {
 
                 ChessPiece[][] tempBoardState = cloneBoardState(boardState);
                 changeBoardStateOneMove(tempBoardState, startCoords, new ChessCoords(newNumberCoord, newLetterCoord));

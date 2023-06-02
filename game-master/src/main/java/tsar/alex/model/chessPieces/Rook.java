@@ -22,8 +22,8 @@ public class Rook extends ChessPiece {
     }
 
     @Override
-    public boolean makeMoveIfPossible(Match match, ChessMove chessMove) {
-        if (super.makeMoveIfPossible(match, chessMove)) {
+    public boolean makeMoveIfPossible(Game game, ChessMove chessMove) {
+        if (super.makeMoveIfPossible(game, chessMove)) {
             chessMove.setStartPieceFirstMove(this.firstMove);
             this.firstMove = false;
             return true;
@@ -33,8 +33,8 @@ public class Rook extends ChessPiece {
     }
 
     @Override
-    protected boolean doesPieceHavePossibleMoves(Match match, ChessCoords startCoords, ChessCoords kingCoords) {
-        ChessPiece[][] boardState = match.getBoardState();
+    protected boolean doesPieceHavePossibleMoves(Game game, ChessCoords startCoords, ChessCoords kingCoords) {
+        ChessPiece[][] boardState = game.getBoardState();
         System.out.println("rook");
         return checkGoVertical(boardState, startCoords, kingCoords, this.color)
                 || checkGoHorizontal(boardState, startCoords, kingCoords, this.color);

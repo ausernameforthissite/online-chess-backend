@@ -1,5 +1,7 @@
 package tsar.alex.service;
 
+import static tsar.alex.utils.CommonTextConstants.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,9 +19,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class RefreshTokenService {
-
-    private static final String NOT_FOUND = "Refresh token not exist or expired";
-    private static final String EXPIRED = "Refresh token is expired";
 
     private final RefreshTokenRepository refreshTokenRepository;
 
