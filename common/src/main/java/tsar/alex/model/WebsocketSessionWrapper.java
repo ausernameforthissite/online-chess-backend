@@ -49,4 +49,16 @@ public class WebsocketSessionWrapper {
         }
     }
 
+    @Override
+    public String toString() {
+        readLock.lock();
+        try {
+            return "WebsocketSessionWrapper{" +
+                    "session=" + session +
+                    ", timeoutDisconnectTask=" + timeoutDisconnectTask +
+                    '}';
+        } finally {
+            readLock.unlock();
+        }
+    }
 }

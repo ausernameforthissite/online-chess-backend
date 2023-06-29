@@ -9,4 +9,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = FindGameCancelRequest.class, name = "CANCEL"),
 })
 public abstract class FindGameWebsocketRequest {
+
 }

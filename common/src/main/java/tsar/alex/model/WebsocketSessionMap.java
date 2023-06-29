@@ -19,7 +19,6 @@ public class WebsocketSessionMap {
         return websocketSessionMap.get(sessionId);
     }
 
-
     @Override
     public String toString() {
         return websocketSessionMap.toString();

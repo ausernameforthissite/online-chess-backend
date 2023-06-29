@@ -11,7 +11,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import lombok.Setter;
-import tsar.alex.utils.EloRating;
+import lombok.ToString;
+import tsar.alex.utils.EloRatingCalculator;
 
 @Getter
 @Setter
@@ -19,6 +20,7 @@ import tsar.alex.utils.EloRating;
 @NoArgsConstructor
 @Entity(name = "current_user_rating")
 @IdClass(CurrentUserRatingId.class)
+@ToString
 public class CurrentUserRating {
 
     @Id
@@ -41,7 +43,8 @@ public class CurrentUserRating {
 
 
     public static CurrentUserRating getDefaultUserRating(String username, ChessGameType chessGameType) {
-        return new CurrentUserRating(username, chessGameType, EloRating.DEFAULT_USER_RATING, 0, EloRating.K_VALUES[0]);
+        return new CurrentUserRating(username, chessGameType, EloRatingCalculator.DEFAULT_USER_RATING, 0,
+                EloRatingCalculator.K_VALUES[0]);
     }
 
     public int incrementGamesPlayed() {

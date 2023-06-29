@@ -9,5 +9,4 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = StartGameBadResponse.class, name = "bad"),
 })
 public interface StartGameResponse {
-
 }

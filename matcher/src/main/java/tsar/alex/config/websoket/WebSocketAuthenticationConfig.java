@@ -7,6 +7,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import tsar.alex.websocket.WebsocketInboundInterceptor;
+import tsar.alex.websocket.WebsocketLogInterceptor;
 
 
 @Configuration
@@ -16,11 +18,15 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketAuthenticationConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebsocketInboundInterceptor websocketInboundInterceptor;
-
+    private final WebsocketLogInterceptor websocketLogInterceptor;
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(websocketInboundInterceptor);
+        registration.interceptors(websocketLogInterceptor, websocketInboundInterceptor);
     }
 
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.interceptors(websocketLogInterceptor);
+    }
 }

@@ -8,17 +8,9 @@ import tsar.alex.model.chessPieces.*;
 
 public class ChessFactory {
 
-    public static ChessPiece getPromotedPawn(ChessPieceEnum chessPieceType, ChessColor color) {
-        return switch (chessPieceType) {
-            case BISHOP -> new Bishop(color);
-            case KNIGHT -> new Knight(color);
-            case QUEEN -> new Queen(color);
-            case ROOK -> new Rook(color, false);
-            default -> throw new RuntimeException();
-        };
-    }
+    public static final ChessPiece[][] INITIAL_BOARD_STATE;
 
-    public static ChessPiece[][] getInitialBoardState() {
+    static {
         ChessPiece[][] boardStateArray = new ChessPiece[8][8];
 
         for (int i = 0; i < 8; i++) {
@@ -44,6 +36,16 @@ public class ChessFactory {
         boardStateArray[7][6] = new Knight(ChessColor.BLACK);
         boardStateArray[7][7] = new Rook(ChessColor.BLACK, true);
 
-        return boardStateArray;
+        INITIAL_BOARD_STATE = boardStateArray;
+    }
+
+    public static ChessPiece getPromotedPawn(ChessPieceEnum chessPieceType, ChessColor color) {
+        return switch (chessPieceType) {
+            case BISHOP -> new Bishop(color);
+            case KNIGHT -> new Knight(color);
+            case QUEEN -> new Queen(color);
+            case ROOK -> new Rook(color, false);
+            default -> throw new RuntimeException();
+        };
     }
 }

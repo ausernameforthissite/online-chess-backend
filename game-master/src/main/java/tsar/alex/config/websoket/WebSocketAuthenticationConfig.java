@@ -7,6 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import tsar.alex.websocket.WebsocketInboundInterceptor;
 
 
 @Configuration

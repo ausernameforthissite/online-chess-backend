@@ -29,6 +29,7 @@ public class Game {
     private ChessGameResult result;
     private List<ChessMove> chessMovesRecord = new ArrayList<>();
     private ChessPositionsRecord chessPositionsRecord;
+    private boolean ratingsUpdated;
 
     public int getCurrentMoveNumber() {
         return chessMovesRecord == null ? 0 : chessMovesRecord.size();

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = UserInGameStatusTrueResponse.class, name = "true"),
         @JsonSubTypes.Type(value = UserInGameStatusFalseResponse.class, name = "false"),
+        @JsonSubTypes.Type(value = UserInGameStatusBadResponse.class, name = "bad"),
 })
 public interface UserInGameStatusResponse {
 

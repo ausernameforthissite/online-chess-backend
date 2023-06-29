@@ -14,7 +14,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
-import tsar.alex.config.websocket.CustomErrorHandler;
+import tsar.alex.websocket.WebsocketErrorHandler;
 import tsar.alex.model.WebsocketSessionMap;
 import tsar.alex.model.WebsocketSessionWrapper;
 import tsar.alex.utils.Constants;
@@ -32,6 +32,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final ScheduledExecutorService scheduledExecutorService;
     private final WebsocketSessionMap websocketSessions;
+    private final WebsocketErrorHandler websocketErrorHandler;
 
     private TaskScheduler messageBrokerTaskScheduler;
 
@@ -82,6 +83,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws").setAllowedOriginPatterns("*");
         registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
-        registry.setErrorHandler(new CustomErrorHandler());
+        registry.setErrorHandler(websocketErrorHandler);
     }
 }

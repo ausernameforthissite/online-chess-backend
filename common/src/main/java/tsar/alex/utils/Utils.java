@@ -5,7 +5,10 @@ import static tsar.alex.utils.Constants.GAME_ID_REGEX;
 
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -21,7 +24,7 @@ public class Utils {
             String message = error.getDefaultMessage();
             if (message != null && !message.isBlank()) {
                 if (!errorMsg.isEmpty()) {
-                    errorMsg.append("\n");
+                    errorMsg.append(".\n");
                 }
                 errorMsg.append(message);
             }
@@ -30,18 +33,8 @@ public class Utils {
         return errorMsg.toString();
     }
 
-    public static <T> String getConstraintViolationsAsString(Set<ConstraintViolation<T>> violations) {
-        StringBuilder errorMsg = new StringBuilder();
-        for (ConstraintViolation<T> constraintViolation : violations) {
-            String message = constraintViolation.getMessage();
-            if (message != null && !message.isBlank()) {
-                if (!errorMsg.isEmpty()) {
-                    errorMsg.append("\n");
-                }
-                errorMsg.append(message);
-            }
-        }
-        return errorMsg.toString();
+    public static String getConstraintViolationsAsString(Set<ConstraintViolation<Object>> violations) {
+        return String.join(". ", violations.stream().map(ConstraintViolation::getMessage).collect(Collectors.toSet()));
     }
 
     public static String validateGameId(String gameId) {
@@ -52,5 +45,11 @@ public class Utils {
             return INCORRECT_GAME_ID;
         }
         return null;
+    }
+
+    public static String getCurrentUsername() {
+        Jwt principal = (Jwt) SecurityContextHolder.
+                getContext().getAuthentication().getPrincipal();
+        return principal.getClaim("username");
     }
 }

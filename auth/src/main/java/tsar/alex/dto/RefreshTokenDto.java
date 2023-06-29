@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefreshTokenDto {
-    private String token;
+    private String tokenValue;
     private long maxAgeSeconds;
 }

@@ -2,12 +2,15 @@ package tsar.alex.service;
 
 import static tsar.alex.utils.CommonTextConstants.*;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tsar.alex.exception.RefreshTokenException;
+import tsar.alex.dto.RefreshTokenValidationBadResult;
+import tsar.alex.dto.RefreshTokenValidationOkResult;
+import tsar.alex.dto.RefreshTokenValidationResult;
 import tsar.alex.model.RefreshToken;
 import tsar.alex.model.User;
 import tsar.alex.repository.RefreshTokenRepository;
@@ -23,34 +26,38 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${refresh-token.expiration-time.seconds}")
-    private Long refreshTokenExpirationSeconds;
+    private long refreshTokenExpirationSeconds;
 
     public RefreshToken generateRefreshToken(User user) {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
-                .token(UUID.randomUUID().toString())
+                .tokenValue(UUID.randomUUID().toString())
                 .maxAge(refreshTokenExpirationSeconds)
-                .expiresAt(Instant.now().plusSeconds(refreshTokenExpirationSeconds))
-                .build();
+                .expiresAt(Instant.now().plusSeconds(refreshTokenExpirationSeconds)).build();
         return refreshTokenRepository.save(refreshToken);
     }
 
-    public User validateRefreshTokenAndRetrieveUser(RefreshToken refreshToken) throws RefreshTokenException {
-        RefreshToken persistentRefreshToken = refreshTokenRepository.findByToken(refreshToken.getToken())
-                .orElseThrow(() -> new RefreshTokenException(NOT_FOUND));
+    public RefreshTokenValidationResult validateRefreshTokenAndRetrieveUser(RefreshToken refreshToken) {
+        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByTokenValue(
+                refreshToken.getTokenValue());
 
-        if (persistentRefreshToken.getExpiresAt().isBefore(Instant.now())) {
-            refreshTokenRepository.delete(refreshToken);
-            throw new RefreshTokenException(EXPIRED);
+        if (refreshTokenOptional.isEmpty()) {
+            return new RefreshTokenValidationBadResult(REFRESH_TOKEN_NOT_FOUND);
         }
 
+        RefreshToken persistentRefreshToken = refreshTokenOptional.get();
+        Instant expiresAt = persistentRefreshToken.getExpiresAt();
         refreshTokenRepository.delete(persistentRefreshToken);
 
-        return persistentRefreshToken.getUser();
+        if (expiresAt.isBefore(Instant.now())) {
+            return new RefreshTokenValidationBadResult(EXPIRED);
+        }
+
+        return new RefreshTokenValidationOkResult(persistentRefreshToken.getUser());
     }
 
     public void deleteRefreshToken(RefreshToken refreshToken) {
-        refreshTokenRepository.deleteByToken(refreshToken.getToken());
+        refreshTokenRepository.deleteByTokenValue(refreshToken.getTokenValue());
     }
 
     @Scheduled(fixedDelay = 3600 * 1000, initialDelay = 3600 * 1000)

@@ -2,21 +2,29 @@ package tsar.alex.service;
 
 import static tsar.alex.utils.CommonTextConstants.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tsar.alex.api.client.GameMasterRestClient;
 import tsar.alex.dto.*;
 import tsar.alex.dto.request.StartGameRequest;
-import tsar.alex.dto.request.UpdateUsersRatingsRequest;
-import tsar.alex.dto.response.StartGameBadResponse;
+import tsar.alex.dto.request.UpdateRatingsAfterGameRequest;
 import tsar.alex.dto.response.StartGameOkResponse;
-import tsar.alex.dto.response.StartGameResponse;
+import tsar.alex.dto.response.UpdateRatingsAfterGameBadResponse;
+import tsar.alex.dto.response.UpdateRatingsAfterGameOkResponse;
+import tsar.alex.dto.response.UpdateRatingsAfterGameResponse;
 import tsar.alex.dto.websocket.request.ChessGameWebsocketRequestEnum;
 import tsar.alex.dto.websocket.response.ChessGameWebsocketResponseEnum.ChessGameWebsocketBadResponseEnum;
 import tsar.alex.exception.DatabaseRecordNotFoundException;
 import tsar.alex.exception.UnexpectedDatabaseQueryResultException;
+import tsar.alex.exception.UnexpectedObjectClassException;
 import tsar.alex.exception.WebsocketErrorCodeEnum;
 import tsar.alex.exception.WebsocketException;
 import tsar.alex.mapper.GameMasterMapper;
@@ -30,105 +38,160 @@ import tsar.alex.utils.ChessGameConstants;
 import tsar.alex.utils.ChessGameUtils;
 import tsar.alex.utils.GameMasterUtils;
 import tsar.alex.utils.Utils;
-import tsar.alex.api.websocket.ChessGameWebsocketRoom;
-import tsar.alex.api.websocket.ChessGameWebsocketRoomsHolder;
+import tsar.alex.websocket.ChessGameWebsocketRoom;
+import tsar.alex.websocket.ChessGameWebsocketRoomsHolder;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class GameService {
 
+    private final GameMasterRestClient gameMasterRestClient;
     private final Validator validator;
-
     private final GameMasterMapper mapper;
     private final ThreadLocalRandom threadLocalRandom;
-
     private final ChessGameWebsocketRoomsHolder chessGameWebsocketRoomsHolder;
-
     private final GameRepository gameRepository;
+    private final UpdateRatingsService updateRatingsService;
 
-
-    public StartGameResponse startGame(StartGameRequest startGameRequest) {
-
-        ChessGameTypeWithTimings gameType = startGameRequest.getChessGameTypeWithTimings();
-        Pair<String> usernames = startGameRequest.getPairOfUsernames();
-        String errorMessage = checkUsersToStartGame(usernames);
-
-        if (errorMessage.length() > 0) {
-            return new StartGameBadResponse(errorMessage);
-        }
-
-        boolean sameUsersOrder;
-        UsersInGame usersInGame;
-
-        if (threadLocalRandom.nextBoolean()) {
-            usersInGame = new UsersInGame(usernames.get(0), usernames.get(1));
-            sameUsersOrder = true;
-        } else {
-            usersInGame = new UsersInGame(usernames.get(1), usernames.get(0));
-            sameUsersOrder = false;
-        }
-
-        ChessPiece[][] initialBoardState = ChessFactory.getInitialBoardState();
-
-        ChessPositionsRecord initialChessPositionsRecord = new ChessPositionsRecord();
-        initialChessPositionsRecord.handleNewChessPosition(-1, initialBoardState);
-
-        Game game = Game.builder()
-                .gameType(gameType)
-                .startedAt(Instant.now())
-                .usersInGame(usersInGame)
-                .boardState(initialBoardState)
-                .chessPositionsRecord(initialChessPositionsRecord)
-                .build();
-
-        String gameId = gameRepository.save(game).getId();
-        ChessGameWebsocketRoom gameWebsocketRoom = chessGameWebsocketRoomsHolder.addGameWebsocketRoom(gameId, gameType,
-                usersInGame);
-        gameWebsocketRoom.reentrantLock.lock();
-
-        try {
-            gameWebsocketRoom.setTimeoutDisconnectTask(ChessColor.WHITE, TimeoutTypeEnum.TIME_IS_UP,
-                    ChessGameConstants.FIRST_MOVE_TIME_LEFT_MS);
-        } finally {
-            gameWebsocketRoom.reentrantLock.unlock();
-        }
-        return new StartGameOkResponse(gameId, game.getStartedAt(), sameUsersOrder);
+    public StartGameOkResponse startGamesIfNotAlready(StartGameRequest startGameRequest) {
+        return new StartGamesHandler(startGameRequest).startGamesIfNotAlready();
     }
 
-    private String checkUsersToStartGame(Pair<String> usernames) {
-        String errorMessage = "";
+    private class StartGamesHandler {
 
-        for (int i = 0; i < 2; i++) {
-            String username = usernames.get(i);
-            List<Game> activeGamesForSpecificUser = gameRepository.findActiveGamesByUsername(username);
-            int numberOfGames = activeGamesForSpecificUser.size();
+        private final ChessGameTypeWithTimings gameType;
+        private final List<String> usernames;
+        private final int numberOfUsernames;
 
-            if (numberOfGames != 0) {
+        private Instant startedAt;
+        private ChessPositionsRecord initialChessPositionsRecord;
+        private List<List<StartGameAlreadyInGamePersonalResultDto>> activeGamesForAllUsernames;
+        private List<StartGamePersonalResultDto> resultList;
+        private List<Game> gamesToStart;
 
-                if (errorMessage.length() > 0) {
-                    errorMessage += ". ";
+        StartGamesHandler(StartGameRequest startGameRequest) {
+            this.gameType = startGameRequest.getGameType();
+            this.usernames = startGameRequest.getUsernames();
+            this.numberOfUsernames = usernames.size();
+        }
+
+        private StartGameOkResponse startGamesIfNotAlready() {
+            retrieveActiveGamesForAllUsernames();
+            log.debug(String.format("startGamesIfNotAlready. Active games = %s", activeGamesForAllUsernames));
+
+            startedAt = Instant.now();
+            initialChessPositionsRecord = new ChessPositionsRecord();
+            initialChessPositionsRecord.handleNewChessPosition(-1, ChessFactory.INITIAL_BOARD_STATE);
+
+            prepareNewGamesAndNegativePersonalResults();
+            log.debug(String.format("startGamesIfNotAlready. Games to start = %s", gamesToStart));
+
+            startGamesAndPrepareOkPersonalResults();
+
+            return new StartGameOkResponse(startedAt, resultList);
+        }
+
+        private void retrieveActiveGamesForAllUsernames() {
+            List<Game> activeGames = gameRepository.findActiveGamesByUsernames(usernames);
+            log.debug(String.format("retrieveActiveGamesForAllUsernames. Active games = %s", activeGames));
+            activeGamesForAllUsernames = Stream.generate(
+                    () -> (List<StartGameAlreadyInGamePersonalResultDto>) null).limit(usernames.size()).collect(
+                    Collectors.toList());
+
+            for (Game game : activeGames) {
+                UsersInGame usersInGame = game.getUsersInGame();
+                addActiveGameForUsername(game, usersInGame.getWhiteUsername());
+                addActiveGameForUsername(game, usersInGame.getBlackUsername());
+            }
+        }
+
+        private void addActiveGameForUsername(Game game, String username) {
+            int usernameIndex = usernames.indexOf(username);
+
+            if (usernameIndex >= 0) {
+                List<StartGameAlreadyInGamePersonalResultDto> activeGamesForUsername = activeGamesForAllUsernames.get(
+                        usernameIndex);
+                if (activeGamesForUsername == null) {
+                    activeGamesForUsername = new ArrayList<>(1);
+                    activeGamesForAllUsernames.set(usernameIndex, activeGamesForUsername);
                 }
+                activeGamesForUsername.add(mapper.mapToStartGameAlreadyInGamePersonalResultDto(game, username));
+            }
+        }
 
-                errorMessage += "User " + username + " is already in ";
+        private void prepareNewGamesAndNegativePersonalResults() {
+            resultList = new ArrayList<>(numberOfUsernames / 2);
+            gamesToStart = new ArrayList<>(numberOfUsernames / 2);
 
-                if (numberOfGames == 1) {
-                    errorMessage += "Game with id = " + activeGamesForSpecificUser.get(0).getId();
+            for (int firstUserIndex = 0; firstUserIndex < numberOfUsernames; firstUserIndex += 2) {
+
+                int secondUserIndex = firstUserIndex + 1;
+                String firstUsername = usernames.get(firstUserIndex);
+                String secondUsername = usernames.get(secondUserIndex);
+                List<StartGameAlreadyInGamePersonalResultDto> firstUserActiveGames = activeGamesForAllUsernames.get(
+                        firstUserIndex);
+                List<StartGameAlreadyInGamePersonalResultDto> secondUserActiveGames = activeGamesForAllUsernames.get(
+                        secondUserIndex);
+
+                if (firstUserActiveGames == null && secondUserActiveGames == null) {
+                    gamesToStart.add(prepareNewGame(firstUsername, secondUsername));
                 } else {
-                    List<String> gameIds = activeGamesForSpecificUser.stream().map(Game::getId).toList();
-                    errorMessage += "Games with ids = [" + gameIds.stream().map(String::valueOf)
-                            .collect(Collectors.joining(", ")) + "]";
+                    resultList.add(prepareStartGameNegativePersonalResult(firstUserActiveGames, firstUsername));
+                    resultList.add(prepareStartGameNegativePersonalResult(secondUserActiveGames, secondUsername));
                 }
             }
         }
 
-        return errorMessage;
+        private Game prepareNewGame(String username1, String username2) {
+            UsersInGame usersInGame = threadLocalRandom.nextBoolean() ? new UsersInGame(username1, username2)
+                    : new UsersInGame(username2, username1);
+
+            return Game.builder()
+                    .gameType(gameType)
+                    .startedAt(startedAt)
+                    .usersInGame(usersInGame)
+                    .boardState(ChessFactory.INITIAL_BOARD_STATE)
+                    .chessPositionsRecord(initialChessPositionsRecord)
+                    .build();
+        }
+
+        private StartGamePersonalResultDto prepareStartGameNegativePersonalResult(
+                List<StartGameAlreadyInGamePersonalResultDto> userActiveGames, String username) {
+
+            if (userActiveGames == null) return new StartGameBadEnemyPersonalResultDto(username);
+            if (userActiveGames.size() == 1) return userActiveGames.get(0);
+
+            String[] gamesIds = userActiveGames.stream().map(StartGameAlreadyInGamePersonalResultDto::getGameId)
+                    .toArray(String[]::new);
+            return new StartGameMultipleActiveGamesPersonalResultDto(username,
+                    String.format(MULTIPLE_ACTIVE_GAMES, username, Arrays.toString(gamesIds)));
+        }
+
+        private void startGamesAndPrepareOkPersonalResults() {
+            List<Game> savedGames = gameRepository.saveAll(gamesToStart);
+
+            for (Game game : savedGames) {
+                ChessGameWebsocketRoom gameWebsocketRoom = chessGameWebsocketRoomsHolder.addGameWebsocketRoom(
+                        game.getId(), gameType, game.getUsersInGame());
+
+                gameWebsocketRoom.reentrantLock.lock();
+                try {
+                    gameWebsocketRoom.setTimeoutDisconnectTask(ChessColor.WHITE, TimeoutTypeEnum.TIME_IS_UP,
+                            ChessGameConstants.FIRST_MOVE_TIME_LEFT_MS);
+                } finally {
+                    gameWebsocketRoom.reentrantLock.unlock();
+                }
+
+                resultList.add(mapper.mapToStartGameOkPersonalResultDto(game));
+            }
+        }
     }
 
 
@@ -161,11 +224,11 @@ public class GameService {
             gameWebsocketRoom.checkSubscribed(username);
 
             Game game = gameRepository.findById(gameId).orElseThrow(
-                    () -> new DatabaseRecordNotFoundException(String.format(DB_AND_OBJECT_NOT_CORRESPOND_ID, gameId)));
+                    () -> new DatabaseRecordNotFoundException(String.format(DB_AND_RAM_OBJECT_NOT_CORRESPOND_ID, gameId)));
 
             if (game.isFinished()) {
                 throw new UnexpectedDatabaseQueryResultException(
-                        String.format(DB_AND_OBJECT_NOT_CORRESPOND_FINISHED, gameId));
+                        String.format(DB_AND_RAM_OBJECT_NOT_CORRESPOND_FINISHED, gameId));
             }
 
             if (chessMove == null) {
@@ -174,7 +237,7 @@ public class GameService {
                 return;
             }
 
-            Set<ConstraintViolation<ChessMove>> violations = validator.validate(chessMove);
+            Set<ConstraintViolation<Object>> violations = validator.validate(chessMove);
             if (!violations.isEmpty()) {
                 gameWebsocketRoom.sendBadResponse(ChessGameWebsocketBadResponseEnum.CHESS_MOVE_BAD, username,
                         Utils.getConstraintViolationsAsString(violations));
@@ -220,14 +283,13 @@ public class GameService {
             game.getChessMovesRecord().add(chessMove);
             game.setFinished(finished);
 
-            gameRepository.save(game);
-
             gameWebsocketRoom.makeMoveOkResponse(chessMove);
+
+            gameRepository.save(game);
 
             if (finished) {
                 gameWebsocketRoom.finishGameWebsockets(game.getResult());
-                UpdateUsersRatingsRequest updateUsersRatingsRequest = mapper.mapToUpdateUsersRatingsRequest(game);
-                GameMasterUtils.sendUpdateUsersRatingsRequest(updateUsersRatingsRequest);
+                updateRatingsService.updateRatingsAfterGameFinished(List.of(game));
             }
 
         } finally {
@@ -235,6 +297,7 @@ public class GameService {
         }
 
     }
+
 
     private void checkIfChessPositionIsChangedIrreversibly(Game game, ChessMove chessMove) {
         if (chessMove.getEndPiece() != null || chessMove.getStartPiece() == ChessPieceEnum.PAWN

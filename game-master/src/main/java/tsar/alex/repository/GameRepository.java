@@ -8,8 +8,10 @@ import java.util.List;
 
 public interface GameRepository extends MongoRepository<Game, String> {
 
-    @Query(value = "{ 'finished' : false, '$or':[{'UsersInGame.whiteUsername': ?0}, {'UsersInGame.whiteUsername': ?0}] }")
-    List<Game> findActiveGamesByUsername(String username);
+    @Query(value = "{ 'finished' : false, '$or':[{'UsersInGame.whiteUsername': {$in : ?0}}, {'UsersInGame.blackUsername': {$in : ?0}}] }",
+            fields = "{ 'gameType' : 1, 'startedAt' : 1, 'usersInGame': 1 }")
+    List<Game> findActiveGamesByUsernames(List<String> usernames);
 
     List<Game> getGamesByFinishedFalse();
+
 }

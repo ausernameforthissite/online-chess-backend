@@ -5,6 +5,7 @@ import static tsar.alex.model.ChessGameType.*;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -41,4 +42,10 @@ public enum ChessGameTypeWithTimings {
         return timeIncrementMS;
     }
 
+    @Override
+    public String toString() {
+        return "ChessGameTypeWithTimings{" +
+                "fullName='" + fullName + '\'' +
+                '}';
+    }
 }

@@ -2,7 +2,9 @@ package tsar.alex.service;
 
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tsar.alex.api.client.GameMasterRestClient;
 import tsar.alex.exception.DatabaseRecordNotFoundException;
 import tsar.alex.mapper.GameMasterMapper;
 import tsar.alex.model.*;
@@ -16,11 +18,14 @@ import tsar.alex.utils.GameMasterUtils;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class GameWebsocketService {
 
+    private final GameMasterRestClient gameMasterRestClient;
     private final GameMasterMapper mapper;
 
     private final GameRepository gameRepository;
+    private final UpdateRatingsService updateRatingsService;
 
 
     public List<Game> getNotFinishedGames() {
@@ -59,7 +64,7 @@ public class GameWebsocketService {
         game.setResult(gameResult);
         gameRepository.save(game);
 
-        GameMasterUtils.sendUpdateUsersRatingsRequest(mapper.mapToUpdateUsersRatingsRequest(game));
+        updateRatingsService.updateRatingsAfterGameFinished(List.of(game));
 
         return gameResult;
     }
@@ -75,8 +80,7 @@ public class GameWebsocketService {
         game.setResult(gameResult);
         gameRepository.save(game);
 
-        GameMasterUtils.sendUpdateUsersRatingsRequest(mapper.mapToUpdateUsersRatingsRequest(game));
-
+        updateRatingsService.updateRatingsAfterGameFinished(List.of(game));
         return gameResult;
     }
 }

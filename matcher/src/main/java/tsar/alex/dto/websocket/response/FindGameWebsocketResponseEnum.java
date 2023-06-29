@@ -13,15 +13,12 @@ public enum FindGameWebsocketResponseEnum {
         CANCEL_BAD;
 
         public FindGameWebsocketResponseEnum toFindGameWebsocketResponseEnum() {
-            switch (this) {
-                case GENERAL_BAD:
-                    return FindGameWebsocketResponseEnum.GENERAL_BAD;
-                case FIND_GAME_BAD:
-                    return FindGameWebsocketResponseEnum.FIND_GAME_BAD;
-                case CANCEL_BAD:
-                    return FindGameWebsocketResponseEnum.CANCEL_BAD;
-            }
-            throw new RuntimeException("Incorrect type FindGameWebsocketBadResponseEnum value: " + this.name());
+            return switch (this) {
+                case GENERAL_BAD -> FindGameWebsocketResponseEnum.GENERAL_BAD;
+                case FIND_GAME_BAD -> FindGameWebsocketResponseEnum.FIND_GAME_BAD;
+                case CANCEL_BAD -> FindGameWebsocketResponseEnum.CANCEL_BAD;
+            };
+
         }
     }
 }

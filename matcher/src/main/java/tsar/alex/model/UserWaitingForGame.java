@@ -2,7 +2,9 @@ package tsar.alex.model;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import lombok.Builder;
 
+@Builder
 public class UserWaitingForGame implements Comparable<UserWaitingForGame> {
 
     private boolean waitingForAnswer;
@@ -41,15 +43,6 @@ public class UserWaitingForGame implements Comparable<UserWaitingForGame> {
         }
     }
 
-    public void setCurrentUserRating(CurrentUserRating currentUserRating) {
-        writeLock.lock();
-        try {
-            this.currentUserRating = currentUserRating;
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
     public WebsocketSessionWrapper getSessionWrapper() {
         readLock.lock();
         try {
@@ -77,17 +70,23 @@ public class UserWaitingForGame implements Comparable<UserWaitingForGame> {
         }
     }
 
-    public void setSearchGameType(ChessGameTypeWithTimings searchGameType) {
-        writeLock.lock();
-        try {
-            this.searchGameType = searchGameType;
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
     @Override
     public int compareTo(UserWaitingForGame o) {
         return Integer.compare(this.getCurrentUserRating().getRating(), o.getCurrentUserRating().getRating());
+    }
+
+    @Override
+    public String toString() {
+        readLock.lock();
+        try {
+            return "UserWaitingForGame{" +
+                    "waitingForAnswer=" + waitingForAnswer +
+                    ", searchGameType=" + searchGameType +
+                    ", sessionWrapper=" + sessionWrapper +
+                    ", currentUserRating=" + currentUserRating +
+                    '}';
+        } finally {
+            readLock.unlock();
+        }
     }
 }

@@ -22,8 +22,8 @@ public class RefreshToken {
     @Column(name = "id")
     private long id;
 
-    @Column(name = "token")
-    private String token;
+    @Column(name = "token_value")
+    private String tokenValue;
 
     @Column(name = "expires_at")
     private Instant expiresAt;
@@ -31,9 +31,7 @@ public class RefreshToken {
     @Transient
     private long maxAge;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username", referencedColumnName = "username")
     private User user;
 }
-
-

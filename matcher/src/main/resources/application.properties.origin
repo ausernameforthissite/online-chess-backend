@@ -1,7 +1,20 @@
+# Logging
+logging.pattern.console=%black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%class{36}.%M %L): %msg%n%throwable
+logging.level.org.springframework=ERROR
+logging.level.tsar.alex=DEBUG
+logging.level.org.zalando.logbook=TRACE
+
+LOGS=/home/aleksander/logs/online-chess/
+logging.file.name=${LOGS}/matcher-log.log
+logging.logback.rollingpolicy.file-name-pattern=${LOGS}/archived/matcher-log-%d{yyyy-MM-dd}.%i.log
+logging.logback.rollingpolicy.max-history=10
+logging.logback.rollingpolicy.total-size-cap=100MB
+logging.pattern.file=%d{ISO8601} %-5level %t %class{36}.%M %L: %msg%n%throwable
+
 # Database properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/matcher_db
 
-spring.datasource.username=
+spring.datasource.username=postgres
 spring.datasource.password=
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true

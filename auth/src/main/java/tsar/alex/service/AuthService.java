@@ -2,90 +2,111 @@ package tsar.alex.service;
 
 import static tsar.alex.utils.CommonTextConstants.*;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
+import tsar.alex.api.client.AuthRestClient;
 import tsar.alex.dto.*;
-import tsar.alex.dto.request.InitializeUserRatingRequest;
-import tsar.alex.dto.response.InitializeUserRatingOkResponse;
-import tsar.alex.dto.response.InitializeUserRatingResponse;
 import tsar.alex.dto.response.RegisterBadResponse;
 import tsar.alex.dto.response.RegisterOkResponse;
 import tsar.alex.dto.response.RegisterResponse;
-import tsar.alex.exception.RestApiResponseException;
+import tsar.alex.exception.DatabaseRecordNotFoundException;
+import tsar.alex.exception.UnexpectedObjectClassException;
 import tsar.alex.mapper.AuthMapper;
 import tsar.alex.model.RefreshToken;
 import tsar.alex.model.User;
 import tsar.alex.repository.UserRepository;
-import tsar.alex.security.JwtProvider;
-import tsar.alex.utils.Endpoints;
+import tsar.alex.utils.JwtProvider;
 
 import java.time.Instant;
 
 @Service
 @AllArgsConstructor
 @Transactional
+@Slf4j
 public class AuthService {
 
-    private final RestTemplate restTemplate;
+    private final AuthRestClient authRestClient;
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
     private final UserRepository userRepository;
-    private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
-
     public RegisterResponse register(User user) {
-        if (userRepository.existsById(user.getUsername())) {
+        String username = user.getUsername();
+
+        if (userRepository.existsById(username)) {
+            log.debug(String.format(ALREADY_REGISTERED_LOG, username));
             return new RegisterBadResponse(ALREADY_REGISTERED);
         }
+
         user.setCreatedAt(Instant.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User persistentUser = userRepository.save(user);
 
-        HttpEntity<InitializeUserRatingRequest> httpRequest = new HttpEntity<>(
-                authMapper.mapToInitializeRatingRequest(persistentUser));
-        InitializeUserRatingResponse response = restTemplate.postForObject(Endpoints.INITIALIZE_USER_RATING,
-                httpRequest, InitializeUserRatingResponse.class);
-
-        if (response instanceof InitializeUserRatingOkResponse) {
-            return new RegisterOkResponse();
+        if (authRestClient.initializeUsersRatings(authMapper.mapToInitializeUsersRatingRequest(persistentUser))) {
+            persistentUser.setRatingInitialized(true);
+            log.debug(String.format(RATINGS_INITIALIZED_LOG, username));
         } else {
-            throw new RestApiResponseException(INCORRECT_RESPONSE);
+            log.debug(String.format(RATINGS_NOT_INITIALIZED_LOG, username));
         }
+
+        return new RegisterOkResponse();
     }
 
     public LoginRefreshDto login(User user) {
         String username = user.getUsername();
+        Optional<User> userOptional =  userRepository.findById(username);
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (userOptional.isEmpty()) {
+            log.debug(String.format(USER_NOT_FOUND, username));
+            return new LoginRefreshBadDto(WRONG_LOGIN_OR_PASSWORD);
+        }
 
-        User persistentUser = userRepository.findById(user.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, username)));
-        return generateLoginRefreshResponse(persistentUser);
+        User persistentUser = userOptional.get();
+
+        if (!passwordEncoder.matches(user.getPassword(), persistentUser.getPassword())) {
+            log.debug(WRONG_PASSWORD);
+            return new LoginRefreshBadDto(WRONG_LOGIN_OR_PASSWORD);
+        }
+
+        return generateLoginRefreshOkResponse(persistentUser);
     }
 
     public LoginRefreshDto refreshToken(RefreshToken refreshToken) {
-        User user = refreshTokenService.validateRefreshTokenAndRetrieveUser(refreshToken);
-        return generateLoginRefreshResponse(user);
+        RefreshTokenValidationResult refreshTokenValidationResult = refreshTokenService.validateRefreshTokenAndRetrieveUser(
+                refreshToken);
+
+        if (refreshTokenValidationResult instanceof RefreshTokenValidationBadResult badResult) {
+            String message = badResult.getMessage();
+            log.debug(message);
+            return new LoginRefreshBadDto(message);
+        } else if (refreshTokenValidationResult instanceof RefreshTokenValidationOkResult okResult) {
+            return generateLoginRefreshOkResponse(okResult.getUser());
+        } else {
+            throw new UnexpectedObjectClassException(String.format(UNEXPECTED_OBJECT_CLASS, "refreshTokenValidationResult",
+                    refreshTokenValidationResult.getClass().getName()));
+        }
     }
 
-    public LoginRefreshDto generateLoginRefreshResponse(User user) {
+    private LoginRefreshOkDto generateLoginRefreshOkResponse(User user) {
         String accessToken = jwtProvider.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
-        RefreshTokenDto refreshTokenDto = authMapper.mapToRefreshTokenDto(refreshToken);
+        return new LoginRefreshOkDto(accessToken, authMapper.mapToRefreshTokenDto(refreshToken));
+    }
 
-        return new LoginRefreshDto(accessToken, refreshTokenDto);
+    public void isUserRegisteredByUsername(String username) {
+        User persistentUser = userRepository.findById(username).orElseThrow(
+                () -> new DatabaseRecordNotFoundException(String.format(UNREGISTERED_USER_AUTHENTICATED, username)));
+
+        if (persistentUser.isRatingInitialized()) {
+            log.warn(String.format(RATINGS_STATUS_MISMATCH, username));
+        } else {
+            persistentUser.setRatingInitialized(true);
+        }
     }
 }

@@ -6,4 +6,5 @@ public class FindGameCancelOkResponse extends FindGameWebsocketResponse {
     public FindGameCancelOkResponse() {
         super(FindGameWebsocketResponseEnum.CANCELED);
     }
+
 }

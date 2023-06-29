@@ -1,28 +1,25 @@
 package tsar.alex.dto.response;
 
-import static tsar.alex.utils.Constants.GAME_ID_REGEX;
+import java.time.Instant;
 
-import javax.validation.constraints.NotBlank;
+import java.util.List;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.Instant;
+import tsar.alex.dto.StartGamePersonalResultDto;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class StartGameOkResponse implements StartGameResponse, RestApiOkResponse {
-    @NotBlank(message = "gameId must not be blank")
-    @Pattern(regexp = GAME_ID_REGEX, message = "Incorrect gameId")
-    private String gameId;
 
     @NotNull(message = "startedAt is null")
     private Instant startedAt;
 
-    private boolean sameUsersOrder;
+    @NotEmpty(message = "personalResults list is empty")
+    private List<@NotNull(message = "startGamePersonalResultDto is null") StartGamePersonalResultDto> personalResults;
 }

@@ -1,13 +1,27 @@
-# Database properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/Gameer_db
+# Logging
+logging.pattern.console=%black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%class{36}.%M %L): %msg%n%throwable
+logging.level.org.springframework=ERROR
+logging.level.tsar.alex=DEBUG
+logging.level.org.zalando.logbook=TRACE
 
-spring.datasource.username=
-spring.datasource.password=
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.show-sql=true
+LOGS=/home/aleksander/logs/online-chess/
+logging.file.name=${LOGS}/game-master-log.log
+logging.logback.rollingpolicy.file-name-pattern=${LOGS}/archived/game-master-log-%d{yyyy-MM-dd}.%i.log
+logging.logback.rollingpolicy.max-history=10
+logging.logback.rollingpolicy.total-size-cap=100MB
+logging.pattern.file=%d{ISO8601} %-5level %t %class{36}.%M %L: %msg%n%throwable
+
+# Database properties
+spring.data.mongodb.authentication-database=admin
+spring.data.mongodb.database=game_db
+spring.data.mongodb.username=myUserAdmin
+spring.data.mongodb.password=
+spring.data.mongodb.port=27017
+spring.data.mongodb.host=localhost
+logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG
 
 # Authentication/authorization
 jwt.public.key=classpath:app.pub
 
 # Sever properties
-server.port=8081
+server.port=8082
